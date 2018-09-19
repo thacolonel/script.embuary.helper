@@ -773,57 +773,77 @@ def emmyviewer(params):
     headertxt = remove_quotes(params.get('header', ''))
     bodytxt = remove_quotes(params.get('message', ''))
     tvdb_id = remove_quotes(params.get('tvdbid', ''))
-    emmy_item = EMMY_DATA.get(tvdb_id, {})
-    emmys = emmy_item.get('emmys', [])
+    emmy_type = remove_quotes(params.get('type', ''))
     heading = headertxt
-    for e in emmys:
-        category = e['category']
-        nominees = e['nominees']
-        cat_wins = e['cat_wins']
-        total_wins = 0
-        total_noms = 0
-        if cat_wins > 0:
-            emmy_text += f'[CR][COLOR gold][B]{category}[/B][/COLOR][CR]'
-        else:
-            emmy_text += f'[CR][B]{category}[/B][CR]'
-        for n in nominees:
-            nominee = n['nominee']
-            nom_years = str(n['awards']['nom_years']).replace('[', '(').replace(']', ')')
-            noms = n['awards']['noms']
-            wins = n['awards']['wins']
-            win_years = str(n['awards']['win_years']).replace('[', '(').replace(']', ')')
-            if wins > 0:
-                total_wins += 1
-                total_noms += 1
+    if emmy_type == 'tvshow':
+        emmy_item = EMMY_DATA['series'].get(tvdb_id, {})
+        emmys = emmy_item.get('emmys', [])
+        for e in emmys:
+            category = e['category']
+            nominees = e['nominees']
+            cat_wins = e['cat_wins']
+            total_wins = 0
+            total_noms = 0
+            if cat_wins > 0:
+                emmy_text += f'[CR][COLOR gold][B]{category}[/B][/COLOR][CR]'
             else:
-                total_noms += 1
+                emmy_text += f'[CR][B]{category}[/B][CR]'
+            for n in nominees:
+                nominee = n['nominee']
+                nom_years = str(n['awards']['nom_years']).replace('[', '(').replace(']', ')')
+                noms = n['awards']['noms']
+                wins = n['awards']['wins']
+                win_years = str(n['awards']['win_years']).replace('[', '(').replace(']', ')')
+                if wins > 0:
+                    total_wins += 1
+                    total_noms += 1
+                else:
+                    total_noms += 1
 
-            if nominee is None:
-                text = ''
+                if nominee is None:
+                    text = ''
+                else:
+                    text = f'{nominee} - '
+
+                if wins == 1 and noms > 1 :
+                    text += f'{wins} win {win_years} and {noms} other nominations {nom_years}[CR]'
+                elif wins > 1 and noms > 1 :
+                    text += f'{wins} wins {win_years} and {noms} other nominations {nom_years}[CR]'
+                elif wins == 1 and noms == 1:
+                    text += f'{wins} win {win_years} and {noms} other nomination {nom_years}[CR]'
+                elif wins > 1 and noms == 1 :
+                    text += f'{wins} wins {win_years} and {noms} other nomination {nom_years}[CR]'
+                elif wins > 1 and noms == 0:
+                    text += f'{wins} wins {win_years}[CR]'
+                elif wins == 1 and noms == 0:
+                    text += f'{wins} win {win_years}[CR]'
+                elif wins == 0 and noms > 1:
+                    text += f'{noms} nominations {nom_years}[CR]'
+                elif wins == 0 and noms == 1:
+                    text += f'{noms} nomination {nom_years}[CR]'
+
+                else:
+                    text = ''
+
+                emmy_text += f'[I]{text}[/I]'
+    elif emmy_type == 'movie':
+        emmy_item = EMMY_DATA['movies'].get(tvdb_id, {})
+        emmys = emmy_item.get('awards', [])
+        annual = emmy_item.get('annual')
+        heading = annual + ' ' + headertxt
+        for i in emmys:
+            item_text = ''
+            category = i['category']
+            won = i['won']
+            nominee = i['nominee']
+            if won is True:
+                category = '[COLOR gold]' + category + '[/COLOR]'
+            if nominee != 'None':
+                item_text += '[B]' + category + '[/B][CR][I]' + nominee + '[/I]'
             else:
-                text = f'{nominee} - '
+                item_text += '[B]' + category + '[/B]'
+            emmy_text += '[CR]' + item_text + '[CR]'
 
-            if wins == 1 and noms > 1 :
-                text += f'{wins} win {win_years} and {noms} other nominations {nom_years}[CR]'
-            elif wins > 1 and noms > 1 :
-                text += f'{wins} wins {win_years} and {noms} other nominations {nom_years}[CR]'
-            elif wins == 1 and noms == 1:
-                text += f'{wins} win {win_years} and {noms} other nomination {nom_years}[CR]'
-            elif wins > 1 and noms == 1 :
-                text += f'{wins} wins {win_years} and {noms} other nomination {nom_years}[CR]'
-            elif wins > 1 and noms == 0:
-                text += f'{wins} wins {win_years}[CR]'
-            elif wins == 1 and noms == 0:
-                text += f'{wins} win {win_years}[CR]'
-            elif wins == 0 and noms > 1:
-                text += f'{noms} nominations {nom_years}[CR]'
-            elif wins == 0 and noms == 1:
-                text += f'{noms} nomination {nom_years}[CR]'
-
-            else:
-                text = ''
-
-            emmy_text += f'[I]{text}[/I]'
 
     DIALOG.textviewer(heading, str(emmy_text))
 
