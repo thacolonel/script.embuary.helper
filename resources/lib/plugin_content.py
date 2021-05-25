@@ -7,11 +7,14 @@ import random
 import xbmc
 import xbmcgui
 import xbmcvfs
+from operator import itemgetter
 
 from resources.lib.json_map import JSON_MAP
-from resources.lib.helper import ADDON, get_bool, get_clean_path, get_date, get_joined_items, json_call, log, remove_quotes, set_plugincontent, url_quote, winprop
+from resources.lib.helper import ADDON, ADDON_ID, DIALOG, INFO, get_bool, get_cache, get_clean_path, get_date, get_joined_items, json_call, log, remove_quotes, set_plugincontent, url_quote, winprop, write_cache
 from resources.lib.library import add_items, get_unwatched
 from resources.lib.image import CreateGenreThumb
+from AFI_100 import AFI_100
+from oscar_data import OSCAR_DATA
 
 ########################
 
@@ -1195,3 +1198,190 @@ class PluginContent(object):
         else:
             log('No content found. Stop retrying.')
             self.retry_count = 1
+
+    ''' Get AFI 100'''
+
+    def getafi100(self):
+        cache_key = 'afi_100'
+        item_list = get_cache(cache_key)
+        if not item_list:
+            item_list = []
+            afi_list = []
+            filter = self.filter_tag if self.tag else None
+            json_query = json_call('VideoLibrary.GetMovies',
+                                   properties=self.properties,
+                                   query_filter=filter
+                                   )
+            result = json_query['result'][self.key_items]
+            for item in result:
+                afi_item = AFI_100.get(item['imdbnumber'])
+                if afi_item:
+                    afi_list.append({'rank': afi_item, 'item': item})
+            afi_list = sorted(afi_list, key=itemgetter('rank'))
+
+            log('Grr JSON QUERY', INFO)
+            log(self.dbtype, INFO)
+            # log(afi_list, INFO)
+            for award in afi_list:
+                item_list.append(award['item'])
+            write_cache(cache_key, item_list)
+
+        add_items(self.li, item_list, type=self.dbtype)
+        set_plugincontent(content='%ss' % self.dbtype, category='AFI 100 Movies', custom_sort=True)
+
+    ''' get cast of item
+    '''
+
+
+    def getbestpicture(self):
+        cache_key = 'oscar.best_picture'
+        item_list = get_cache(cache_key)
+        if not item_list:
+            item_list = []
+            oscar_list = []
+            json_query = json_call('VideoLibrary.GetMovies',
+                                   properties=self.properties
+                                   )
+            result = json_query['result'][self.key_items]
+            for item in result:
+                oscar_awards = OSCAR_DATA.get(item['imdbnumber'], {}).get('awards', {})
+                for i in oscar_awards:
+                    if i['tag_name'] == 'best_picture':
+                        if i['won'] is True:
+                            oscar_list.append({'item': item, 'premiered': item['premiered']})
+                            break
+            oscar_list = sorted(oscar_list, key=itemgetter('premiered'), reverse=True)
+            for oscar in oscar_list:
+                item_list.append(oscar['item'])
+
+            log('Oscar Best Picture', INFO)
+            log(self.dbtype, INFO)
+            log(item_list, INFO)
+            write_cache(cache_key, item_list)
+
+        add_items(self.li, item_list, type=self.dbtype)
+        set_plugincontent(content='%ss' % self.dbtype, category='Oscar Best Picture')
+
+    def getoscars(self, refresh=None, category=None, winner=None):
+        if category is None:
+            category = self.params.get('category')
+        if winner is None:
+            winner = self.params.get('winner', True)
+        if winner == 'yes':
+            winner = True
+        if winner == 'no':
+            winner = False
+        if not category:
+            log('GetOscars no category selected', INFO)
+            return
+        if winner is True:
+            cache_key = 'oscar.' + category + '.winners'
+        else:
+            cache_key = 'oscar.' + category + '.nominees'
+        item_list = get_cache(cache_key)
+        if not item_list or refresh is True:
+            item_list = []
+            oscar_list = []
+            filters = self.filter_tag if self.tag else None
+            json_query = json_call('VideoLibrary.GetMovies',
+                                   properties=self.properties,
+                                   query_filter=filters
+                                   )
+            result = json_query['result'][self.key_items]
+
+            for item in result:
+                if category == 'all':
+                    if winner is True:
+                        wins = OSCAR_DATA.get(item['imdbnumber'], {}).get('wins_total')
+                        if wins > 0:
+                            oscar_list.append({'item': item, 'premiered': item['year'], 'winner': True})
+
+                    else:
+                        movie = OSCAR_DATA.get(item['imdbnumber'])
+                        if movie:
+                            oscar_list.append({'item': item, 'premiered': item['year'], 'winner': True})
+                else:
+                    oscar_awards = OSCAR_DATA.get(item['imdbnumber'], {}).get('awards', {})
+                    oscar_year = OSCAR_DATA.get(item['imdbnumber'], {}).get('year')
+                    item['oscar_year'] = oscar_year
+                    item['oscar_category'] = category
+                    for i in oscar_awards:
+                        if i['tag_name'] == category:
+                            if category in ['best_actor', 'best_actress', 'best_supporting_actor',
+                                            'best_supporting_actress']:
+                                for c in item['cast']:
+                                    if i['nominee'] == c['name'].encode('utf-8'):
+                                        if c.get('thumbnail'):
+                                            item['actor_icon'] = c['thumbnail']
+                                            # item['art']['poster'] = c['thumbnail']
+                                        item['oscar_nominee'] = c['name']
+                                        break
+                                if winner is True and i['won'] is True:
+                                    item['oscar_winner'] = True
+                                    oscar_list.append({'item': item, 'premiered': item['oscar_year'],
+                                                       'winner': item['oscar_winner']})
+                                    break
+                                elif winner is False:
+                                    if i['won'] is True:
+                                        item['oscar_winner'] = True
+                                    else:
+                                        item['oscar_winner'] = False
+                                    oscar_list.append({'item': item, 'premiered': item['oscar_year'],
+                                                       'winner': item['oscar_winner']})
+                                    break
+                            else:
+                                if winner is True:
+                                    if i['won'] is True:
+                                        item['oscar_winner'] = True
+                                        oscar_list.append({'item': item, 'premiered': item['oscar_year'],
+                                                           'winner': item['oscar_winner']})
+                                        break
+                                elif winner is False:
+                                    if i['won'] is True:
+                                        item['oscar_winner'] = True
+                                    else:
+                                        item['oscar_winner'] = False
+                                    oscar_list.append({'item': item, 'premiered': item['oscar_year'],
+                                                       'winner': item['oscar_winner']})
+
+            oscar_list = sorted(oscar_list, key=itemgetter('premiered', 'winner'), reverse=True)
+            for oscar in oscar_list:
+                item_list.append(oscar['item'])
+
+            # log('Oscar: ' + category, NOTICE)
+            # log(self.dbtype, NOTICE)
+            # log(item_list, NOTICE)
+            write_cache(cache_key, item_list)
+
+        add_items(self.li, item_list, type=self.dbtype)
+        set_plugincontent(content='%ss' % self.dbtype, category='Oscars', custom_sort=True)
+
+    def refreshoscars(self):
+        DIALOG.notification(ADDON_ID, 'Starting to Refresh Oscar Awards')
+        log('Refresh Oscar Awards', INFO)
+        for i in ['best_picture', 'best_director', 'best_actor', 'best_actress',
+                  'best_supporting_actress', 'best_supporting_actor',
+                  'all']:
+            self.getoscars(category=i, refresh=True, winner=True)
+            self.getoscars(category=i, refresh=True, winner=False)
+        DIALOG.notification(ADDON_ID, 'Finished Refreshing Oscar Awards')
+
+    def getall(self):
+        cache_key = 'test_get_all'
+        result = get_cache(cache_key)
+        if not result:
+            sort_args = remove_quotes(self.params.get('sort_args')) or None
+            filters = self.filter_tag if self.tag else None
+            log('sort_args', INFO)
+            log(sort_args, INFO)
+            log('filters', INFO)
+            log(filters, INFO)
+            json_query = json_call('VideoLibrary.GetMovies',
+                                   properties=self.properties,
+                                   sort=eval(sort_args),
+                                   query_filter=filters
+                                   )
+            result = json_query['result'][self.key_items]
+            write_cache(cache_key, result)
+        add_items(self.li, result, type=self.dbtype)
+        set_plugincontent(content='%ss' % self.dbtype, category='All Movies', custom_sort=False)

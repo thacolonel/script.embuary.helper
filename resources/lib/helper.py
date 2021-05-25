@@ -12,6 +12,7 @@ import json
 import time
 import datetime
 import os
+import simplecache
 import sys
 import hashlib
 import urllib.request as urllib
@@ -34,6 +35,10 @@ DIALOG = xbmcgui.Dialog()
 PLAYER = xbmc.Player()
 VIDEOPLAYLIST = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
 MUSICPLAYLIST = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
+
+CACHE = simplecache.SimpleCache()
+CACHE.enable_mem_cache = False
+CACHE_PREFIX = "movieawards" + '_'
 
 ########################
 
@@ -434,3 +439,13 @@ def set_plugincontent(content=None, category=None):
         xbmcplugin.setPluginCategory(int(sys.argv[1]), category)
     if content:
         xbmcplugin.setContent(int(sys.argv[1]), content)
+
+
+def get_cache(key):
+    return CACHE.get(CACHE_PREFIX + key)
+
+
+def write_cache(key, data, cache_time=336):
+    if data:
+        CACHE.set(CACHE_PREFIX + key, data,
+                  expiration=datetime.timedelta(hours=cache_time))
