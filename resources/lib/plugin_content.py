@@ -13,8 +13,8 @@ from resources.lib.json_map import JSON_MAP
 from resources.lib.helper import ADDON, ADDON_ID, DIALOG, INFO, get_bool, get_cache, get_clean_path, get_date, get_joined_items, json_call, log, remove_quotes, set_plugincontent, url_quote, winprop, write_cache
 from resources.lib.library import add_items, get_unwatched
 from resources.lib.image import CreateGenreThumb
-from AFI_100 import AFI_100
-from oscar_data import OSCAR_DATA
+from resources.lib.AFI_100 import AFI_100
+from resources.lib.oscar_data import OSCAR_DATA
 
 ########################
 
