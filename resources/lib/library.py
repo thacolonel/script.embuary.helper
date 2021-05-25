@@ -5,11 +5,13 @@
 import xbmc
 import xbmcgui
 
-from resources.lib.helper import condition, get_joined_items
+from resources.lib.helper import condition, get_joined_items, log
+from resources.lib.oscar_data import OSCAR_DATA
+from resources.lib.AFI_100 import AFI_100
 
 ########################
 
-def add_items(li, json_query, type, searchstring=None):
+def add_items(li, json_query, type, searchstring=None, imdb=None):
     for item in json_query:
         if type == 'movie':
             handle_movies(li, item, searchstring)
@@ -22,7 +24,7 @@ def add_items(li, json_query, type, searchstring=None):
         elif type == 'genre':
             handle_genre(li, item)
         elif type == 'cast':
-            handle_cast(li, item)
+            handle_cast(li, item, imdb)
 
 
 def handle_movies(li, item, searchstring=None):
@@ -76,6 +78,18 @@ def handle_movies(li, item, searchstring=None):
     _set_unique_properties(li_item,country,'country')
     _set_unique_properties(li_item,director,'director')
     _set_unique_properties(li_item,writer,'writer')
+
+    # Add oscar and AFI properties
+    oscar_item = OSCAR_DATA.get(item['imdbnumber'], {})
+    afi_item = AFI_100.get(item['imdbnumber'], '')
+    li_item.setProperty('oscars', str(oscar_item.get('text', '')))
+    li_item.setProperty('oscar_wins', str(oscar_item.get('wins_total', '')))
+    li_item.setProperty('oscar_nominee', item.get('oscar_nominee', item['title']))
+    li_item.setProperty('oscar_year', str(item.get('oscar_year', item['year'])))
+    li_item.setProperty('oscar_winner', str(item.get('oscar_winner', '')))
+    li_item.setProperty('oscar_category', item.get('oscar_category', ''))
+    li_item.setProperty('actor_icon', item.get('actor_icon', ''))
+    li_item.setProperty('AFI_100', str(afi_item))
 
     li_item.setProperty('resumetime', str(item['resume']['position']))
     li_item.setProperty('totaltime', str(item['resume']['total']))
@@ -287,8 +301,16 @@ def handle_episodes(li, item):
     li.append((item['file'], li_item, False))
 
 
-def handle_cast(li, item):
+def handle_cast(li, item, imdb):
+    oscar_awards = OSCAR_DATA.get(imdb, {}).get('awards', {})
+
     li_item = xbmcgui.ListItem(item['name'], offscreen=True)
+    for i in oscar_awards:
+        if i['nominee'] == item['name']:
+            # log('Ding Ding')
+            # log(item['name'], NOTICE)
+            li_item.setProperty('oscar', str(i['won']))
+
     li_item.setLabel(item['name'])
     li_item.setLabel2(item['role'])
     li_item.setProperty('role', item['role'])

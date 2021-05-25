@@ -938,6 +938,7 @@ class PluginContent(object):
 
             if self.key_details in json_query['result']:
                 cast = json_query['result'][self.key_details]['cast']
+                imdb = json_query['result'][self.key_details]['imdbnumber']
 
                 ''' Fallback to TV show cast if episode has no cast stored
                 '''
@@ -945,14 +946,16 @@ class PluginContent(object):
                     tvshow_id = self._gettvshowid(idtype='episode', dbid=self.dbid)
 
                     json_query = json_call('VideoLibrary.GetTVShowDetails',
-                                           properties=['cast'],
+                                           properties=['cast', 'imdbnumber'],
                                            params={'tvshowid': int(tvshow_id)}
                                            )
 
                     cast = json_query['result']['tvshowdetails']['cast']
+                    imdb = json_query['result'][self.key_details]['imdbnumber']
 
             else:
                 cast = json_query['result'][self.key_items][0]['cast']
+                imdb = json_query['result'][self.key_details]['imdbnumber']
 
             if not cast:
                 raise Exception
@@ -961,7 +964,7 @@ class PluginContent(object):
             log('Get cast: No cast found.')
             return
 
-        add_items(self.li, cast, type='cast')
+        add_items(self.li, cast, type='cast', imdb=imdb)
 
 
     ''' get full cast of movie set
