@@ -4,11 +4,14 @@
 ########################
 
 import random
+import xbmc
+import xbmcgui
 import xbmcvfs
 
-from resources.lib.helper import *
-from resources.lib.library import *
-from resources.lib.image import *
+from resources.lib.json_map import JSON_MAP
+from resources.lib.helper import ADDON, get_bool, get_clean_path, get_date, get_joined_items, json_call, log, remove_quotes, set_plugincontent, url_quote, winprop
+from resources.lib.library import add_items, get_unwatched
+from resources.lib.image import CreateGenreThumb
 
 ########################
 
@@ -1147,7 +1150,7 @@ class PluginContent(object):
 
     ''' function to return the TV show id based on a season or episode id
     '''
-    def _gettvshowid(self,dbid=None,idtype=None):
+    def _gettvshowid(self, dbid=None, idtype=None):
         try:
             if not dbid:
                 dbid = self.dbid
@@ -1182,7 +1185,7 @@ class PluginContent(object):
 
     ''' retry loop for random based widgets if previous run has not returned any single item
     '''
-    def _retry(self,type):
+    def _retry(self, type):
         log('Retry to get content (%s)' % str(self.retry_count))
 
         if self.retry_count < 5:

@@ -5,13 +5,11 @@
 import xbmc
 import xbmcgui
 
-from time import gmtime, strftime
-from resources.lib.json_map import *
-from resources.lib.helper import *
+from resources.lib.helper import condition, get_joined_items
 
 ########################
 
-def add_items(li,json_query,type,searchstring=None):
+def add_items(li, json_query, type, searchstring=None):
     for item in json_query:
         if type == 'movie':
             handle_movies(li, item, searchstring)
@@ -27,7 +25,7 @@ def add_items(li,json_query,type,searchstring=None):
             handle_cast(li, item)
 
 
-def handle_movies(li,item,searchstring=None):
+def handle_movies(li, item, searchstring=None):
     genre = item.get('genre', '')
     studio = item.get('studio', '')
     country = item.get('country', '')
@@ -102,7 +100,7 @@ def handle_movies(li,item,searchstring=None):
     li.append((item['file'], li_item, False))
 
 
-def handle_tvshows(li,item,searchstring=None):
+def handle_tvshows(li, item, searchstring=None):
     genre = item.get('genre', '')
     studio = item.get('studio', '')
     dbid = item['tvshowid']
@@ -169,7 +167,7 @@ def handle_tvshows(li,item,searchstring=None):
     li.append((item['file'], li_item, folder))
 
 
-def handle_seasons(li,item):
+def handle_seasons(li, item):
     tvshowdbid = item['tvshowid']
     season = item['season']
     episode = item['episode']
@@ -213,7 +211,7 @@ def handle_seasons(li,item):
     li.append((file, li_item, folder))
 
 
-def handle_episodes(li,item):
+def handle_episodes(li, item):
     director = item.get('director', '')
     writer = item.get('writer', '')
 
@@ -289,7 +287,7 @@ def handle_episodes(li,item):
     li.append((item['file'], li_item, False))
 
 
-def handle_cast(li,item):
+def handle_cast(li, item):
     li_item = xbmcgui.ListItem(item['name'], offscreen=True)
     li_item.setLabel(item['name'])
     li_item.setLabel2(item['role'])
@@ -302,7 +300,7 @@ def handle_cast(li,item):
     li.append(('', li_item, False))
 
 
-def handle_genre(li,item):
+def handle_genre(li, item):
     li_item = xbmcgui.ListItem(item['label'], offscreen=True)
     li_item.setInfo(type='Video', infoLabels={'title': item['label'],
                                               'dbid': str(item['genreid']),
@@ -334,7 +332,7 @@ def _get_cast(castData):
     return [listcast, listcastandrole]
 
 
-def _set_unique_properties(li_item,item,prop):
+def _set_unique_properties(li_item, item, prop):
     try:
         i = 0
         for value in item:
@@ -346,7 +344,7 @@ def _set_unique_properties(li_item,item,prop):
     return li_item
 
 
-def _set_ratings(li_item,item):
+def _set_ratings(li_item, item):
     for key in item:
         try:
             rating = item[key]['rating']

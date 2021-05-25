@@ -9,14 +9,15 @@ import xbmcvfs
 import random
 import os
 
-from resources.lib.helper import *
-from resources.lib.json_map import *
+from resources.lib.helper import clear_playlists, execute, json_call, log, VIDEOPLAYLIST
+from resources.lib.json_map import JSON_MAP
 
 #################################################################################################
 
 class CinemaMode(object):
-    def __init__(self,dbid,dbtype):
-        self.trailer_count = xbmc.getInfoLabel('Skin.String(TrailerCount)') if xbmc.getInfoLabel('Skin.String(TrailerCount)') != '0' else False
+    def __init__(self, dbid, dbtype):
+        self.trailer_count = xbmc.getInfoLabel('Skin.String(TrailerCount)') \
+            if xbmc.getInfoLabel('Skin.String(TrailerCount)') != '0' else False
         self.intro_path = xbmc.getInfoLabel('Skin.String(IntroPath)')
 
         self.dbid = dbid
@@ -46,7 +47,8 @@ class CinemaMode(object):
 
                 trailer_title = '%s (%s)' % (trailer['title'], xbmc.getLocalizedString(20410))
                 trailer_rating = str(round(trailer['rating'], 1))
-                trailer_thumb = trailer['art'].get('landscape') or trailer['art'].get('fanart') or trailer['art'].get('poster', '')
+                trailer_thumb = trailer['art'].get('landscape') or trailer['art'].get('fanart') or \
+                                trailer['art'].get('poster', '')
 
                 listitem = xbmcgui.ListItem(trailer_title, offscreen=True)
                 listitem.setInfo('video', {'Title': trailer_title,
@@ -99,7 +101,8 @@ class CinemaMode(object):
     def get_trailers(self):
         movies = json_call('VideoLibrary.GetMovies',
                            properties=JSON_MAP['movie_properties'],
-                           query_filter={'and': [{'field': 'playcount', 'operator': 'lessthan', 'value': '1'}, {'field': 'hastrailer', 'operator': 'true', 'value': []}]},
+                           query_filter={'and': [{'field': 'playcount', 'operator': 'lessthan', 'value': '1'},
+                                                 {'field': 'hastrailer', 'operator': 'true', 'value': []}]},
                            sort={'method': 'random'}, limit=int(self.trailer_count)
                            )
 

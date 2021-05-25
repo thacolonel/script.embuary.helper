@@ -6,12 +6,11 @@
 from __future__ import division
 
 import xbmc
-import xbmcaddon
 import xbmcvfs
 import os
 from PIL import ImageFilter,Image,ImageOps,ImageEnhance
 
-from resources.lib.helper import *
+from resources.lib.helper import ADDON, ADDON_DATA_IMG_PATH, ADDON_DATA_IMG_TEMP_PATH, DEBUG, ERROR, WARNING, log,  md5hash, touch_file, url_unquote,  winprop
 
 #################################################################################################
 
@@ -39,7 +38,7 @@ except OSError as e:
 
 ''' blur image and store result in addon data folder
 '''
-class ImageBlur():
+class ImageBlur:
     def __init__(self,prop='listitem',file=None,radius=None,saturation=None):
         global OLD_IMAGE
         self.image = file if file is not None else xbmc.getInfoLabel('Control.GetLabel(%s)' % BLUR_CONTAINER)
@@ -107,7 +106,7 @@ class ImageBlur():
 ''' generate genre thumb and store result in addon data folder
 '''
 class CreateGenreThumb():
-    def __init__(self,genre,images):
+    def __init__(self, genre, images):
         self.images = images
         self.filename = 'genre_' + md5hash(images) + '.jpg'
         self.filepath = os.path.join(ADDON_DATA_IMG_PATH, self.filename)

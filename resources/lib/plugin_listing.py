@@ -8,7 +8,7 @@ import xbmc
 import xbmcgui
 from urllib.parse import urlencode
 
-from resources.lib.helper import *
+from resources.lib.helper import ADDON, ADDON_ID, json_call, set_plugincontent
 
 ########################
 
@@ -62,7 +62,7 @@ LISTING = {
 ########################
 
 class PluginListing(object):
-    def __init__(self,params,li):
+    def __init__(self, params, li):
         self.li = li
         self.folder = params.get('folder')
         self.browse = params.get('browse')
@@ -167,7 +167,7 @@ class PluginListing(object):
 
         return items
 
-    def _get_tags(self,library):
+    def _get_tags(self, library):
         tags = []
         json_query = json_call('VideoLibrary.GetTags',
                                properties=['title'],
@@ -182,14 +182,14 @@ class PluginListing(object):
 
         return tags
 
-    def _encode_url(self,**kwargs):
+    def _encode_url(self, **kwargs):
         empty_keys = [key for key,value in list(kwargs.items()) if not value or value is None]
         for key in empty_keys:
             del kwargs[key]
 
         return '{0}?{1}'.format(sys.argv[0], urlencode(kwargs))
 
-    def _add_item(self,label,url):
+    def _add_item(self, label, url):
         icon = 'special://home/addons/' + ADDON_ID + '/resources/icon.png'
         list_item = xbmcgui.ListItem(label=label, offscreen=True)
         list_item.setInfo('video', {'title': label, 'mediatype': 'video'})

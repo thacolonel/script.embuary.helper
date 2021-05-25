@@ -1,12 +1,9 @@
 #!/usr/bin/python
 
 ########################
+import sys
 
-import xbmcgui
-
-from resources.lib.helper import *
-from resources.lib.utils import *
-from resources.lib.cinema_mode import *
+from resources.lib.helper import ADDON, ADDON_ID, DIALOG
 
 ########################
 
@@ -31,7 +28,7 @@ class Main:
             else:
                 try:
                     self.params[arg.split("=")[0].lower()] = "=".join(arg.split("=")[1:]).strip()
-                except:
+                except Exception:
                     self.params = {}
 
     def getactions(self):

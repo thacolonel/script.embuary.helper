@@ -7,8 +7,7 @@ import xbmc
 import xbmcplugin
 import xbmcgui
 
-from resources.lib.library import *
-from resources.lib.helper import *
+from resources.lib.helper import execute, go_to_path, json_call
 
 ########################
 

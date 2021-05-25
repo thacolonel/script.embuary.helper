@@ -9,16 +9,19 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcvfs
+import datetime
 import json
 import random
 import os
 import locale
 
-from resources.lib.helper import *
-from resources.lib.library import *
-from resources.lib.json_map import *
-from resources.lib.image import *
-from resources.lib.cinema_mode import *
+from resources.lib.helper import (ADDON, ADDON_ID, ADDON_DATA_IMG_PATH, DIALOG, addon_data, clear_playlists, condition, execute,
+                                  get_bool, get_library_tags, go_to_path, json_call, log, remove_quotes, set_library_tags,
+                                  sync_library_tags, url_quote, url_unquote, winprop)
+from resources.lib.library import get_unwatched
+from resources.lib.json_map import JSON_MAP
+from resources.lib.image import ImageBlur, image_info
+from resources.lib.cinema_mode import CinemaMode
 
 ########################
 
@@ -475,20 +478,21 @@ def playall(params):
 def playrandom(params):
     clear_playlists()
     container = params.get('id')
+    dbid = params.get('dbid')
 
     i = random.randint(1,int(xbmc.getInfoLabel('Container(%s).NumItems' % container)))
 
-    if condition('String.IsEqual(Container(%s).ListItemAbsolute(%s).DBType,movie)' % (container,i)):
+    if condition('String.IsEqual(Container(%s).ListItemAbsolute(%s).DBType,movie)' % (container, i)):
         media_type = 'movie'
-    elif condition('String.IsEqual(Container(%s).ListItemAbsolute(%s).DBType,episode)' % (container,i)):
+    elif condition('String.IsEqual(Container(%s).ListItemAbsolute(%s).DBType,episode)' % (container, i)):
         media_type = 'episode'
-    elif condition('String.IsEqual(Container(%s).ListItemAbsolute(%s).DBType,song)' % (container,i)):
+    elif condition('String.IsEqual(Container(%s).ListItemAbsolute(%s).DBType,song)' % (container, i)):
         media_type = 'song'
     else:
         media_type = None
 
-    item_dbid = xbmc.getInfoLabel('Container(%s).ListItemAbsolute(%s).DBID' % (dbid,i))
-    url = xbmc.getInfoLabel('Container(%s).ListItemAbsolute(%s).Filenameandpath' % (dbid,i))
+    item_dbid = xbmc.getInfoLabel('Container(%s).ListItemAbsolute(%s).DBID' % (dbid, i))
+    url = xbmc.getInfoLabel('Container(%s).ListItemAbsolute(%s).Filenameandpath' % (dbid, i))
 
     playitem({'type': media_type, 'dbid': item_dbid, 'item': url, 'resume': False})
 

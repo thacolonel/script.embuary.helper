@@ -1,14 +1,14 @@
 #!/usr/bin/python
 
 ########################
-
+import sys
 import xbmcplugin
 import urllib.parse as urlparse
 
-from resources.lib.helper import *
-from resources.lib.plugin_listing import *
-from resources.lib.plugin_content import *
-from resources.lib.plugin_actions import *
+# from resources.lib.helper import *
+from resources.lib.plugin_listing import PluginListing
+from resources.lib.plugin_content import PluginContent
+from resources.lib.plugin_actions import PluginActions
 
 ########################
 
@@ -25,7 +25,7 @@ class Main:
             self.listing()
 
     def _parse_argv(self):
-        base_url = sys.argv[0]
+        # base_url = sys.argv[0]
         path = sys.argv[2]
 
         try:

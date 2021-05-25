@@ -4,14 +4,10 @@
 ########################
 
 import xbmc
-import xbmcgui
 import random
-import os
-import time
 
-from resources.lib.utils import split
-from resources.lib.helper import *
-from resources.lib.image import *
+from resources.lib.helper import ADDON, ADDON_ID, DIALOG, condition, json_call, log, reload_widgets, sync_library_tags, winprop
+from resources.lib.image import ImageBlur
 from resources.lib.player_monitor import PlayerMonitor
 
 ########################
@@ -37,7 +33,7 @@ class Service(xbmc.Monitor):
         else:
             self.keep_alive()
 
-    def onNotification(self,sender,method,data):
+    def onNotification(self, sender, method, data):
         if ADDON_ID in sender and 'restart' in method:
             self.restart = True
 
@@ -151,13 +147,7 @@ class Service(xbmc.Monitor):
         self.stop()
 
     def grabfanart(self):
-        arts = {}
-        arts['movies'] = []
-        arts['tvshows'] = []
-        arts['musicvideos'] = []
-        arts['artists'] = []
-        arts['all'] = []
-        arts['videos'] = []
+        arts = {'movies': [], 'tvshows': [], 'musicvideos': [], 'artists': [], 'all': [], 'videos': []}
 
         for item in ['movies', 'tvshows', 'artists', 'musicvideos']:
             dbtype = 'Video' if item != 'artists' else 'Audio'

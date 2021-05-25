@@ -5,11 +5,10 @@
 import xbmc
 import xbmcgui
 import json
-import datetime
 
-from resources.lib.helper import *
-from resources.lib.json_map import *
-from resources.lib.image import *
+from resources.lib.helper import MUSICPLAYLIST, PLAYER, VIDEOPLAYLIST, condition, get_channeldetails, json_call, log, winprop
+
+from resources.lib.image import ImageBlur, image_info
 
 ########################
 
@@ -87,7 +86,7 @@ class PlayerMonitor(xbmc.Monitor):
                     MUSICPLAYLIST.clear()
                     log('Video playlist has been filled. Clear existing music playlist')
 
-    def get_audiotracks(self,clear=False):
+    def get_audiotracks(self, clear=False):
         xbmc.sleep(100)
         audiotracks = PLAYER.getAvailableAudioStreams()
         if len(audiotracks) > 1 and not clear:
@@ -95,7 +94,7 @@ class PlayerMonitor(xbmc.Monitor):
         else:
             winprop('EmbuaryPlayerAudioTracks', clear=True)
 
-    def get_channellogo(self,clear=False):
+    def get_channellogo(self, clear=False):
         try:
             if clear:
                 raise Exception
@@ -106,10 +105,10 @@ class PlayerMonitor(xbmc.Monitor):
         except Exception:
             winprop('Player.ChannelLogo', clear=True)
 
-    def get_videoinfo(self,clear=False):
+    def get_videoinfo(self, clear=False):
         dbid = xbmc.getInfoLabel('VideoPlayer.DBID')
 
-        for i in range(1,50):
+        for i in range(1, 50):
             winprop('VideoPlayer.AudioCodec.%d' % i, clear=True)
             winprop('VideoPlayer.AudioChannels.%d' % i, clear=True)
             winprop('VideoPlayer.AudioLanguage.%d' % i, clear=True)
@@ -158,7 +157,7 @@ class PlayerMonitor(xbmc.Monitor):
         except Exception:
             return
 
-    def get_art_info(self,clear=False):
+    def get_art_info(self, clear=False):
         for art in ['Player.Icon', 'Player.Art(poster)', 'Player.Art(tvshow.poster)', 'Pvr.EPGEventIcon']:
             image = xbmc.getInfoLabel(art)
 

@@ -37,7 +37,7 @@ MUSICPLAYLIST = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
 
 ########################
 
-def log(txt,loglevel=DEBUG,force=False):
+def log(txt, loglevel=DEBUG, force=False):
     if (ADDON.getSettingBool('log') or force) and loglevel not in [WARNING, ERROR]:
         loglevel = INFO
 
@@ -183,7 +183,7 @@ def get_channeldetails(channel_name):
     return channel_details
 
 
-def json_call(method,properties=None,sort=None,query_filter=None,limit=None,params=None,item=None,options=None,limits=None,debug=False):
+def json_call(method,properties=None, sort=None, query_filter=None, limit=None, params=None, item=None, options=None, limits=None, debug=False):
     json_string = {'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': {}}
 
     if properties is not None:
@@ -240,7 +240,7 @@ def reload_widgets(instant=False,reason='Timer'):
         execute('AlarmClock(WidgetRefresh,SetProperty(EmbuaryWidgetUpdate,%s,home),00:10,silent)' % timestamp)
 
 
-def sync_library_tags(tags=None,recreate=False):
+def sync_library_tags(tags=None, recreate=False):
     save = False
 
     if tags is None:
@@ -346,7 +346,7 @@ def get_library_tags():
     return tags
 
 
-def set_library_tags(tags,whitelist=None,save=True,clear=False):
+def set_library_tags(tags,whitelist=None, save=True, clear=False):
     setting = 'tags_whitelist.' + xbmc.getSkinDir() +'.data'
     index = 0
 
@@ -364,7 +364,7 @@ def set_library_tags(tags,whitelist=None,save=True,clear=False):
                 winprop('library.tags.%d.id' % index, tags[item].get('id'))
                 index += 1
 
-    for clean in range(index,30):
+    for clean in range(index, 30):
         winprop('library.tags.%d.title' % clean, clear=True)
         winprop('library.tags.%d.type' % clean, clear=True)
         winprop('library.tags.%d.id' % clean, clear=True)
@@ -404,7 +404,7 @@ def addon_data_cleanup(number_of_days=60):
         pass
 
 
-def addon_data(file,content=False):
+def addon_data(file, content=False):
     targetfile = os.path.join(ADDON_DATA_PATH, file)
 
     if content is False:
@@ -429,7 +429,7 @@ def addon_data(file,content=False):
             json.dump(data, f)
 
 
-def set_plugincontent(content=None,category=None):
+def set_plugincontent(content=None, category=None):
     if category:
         xbmcplugin.setPluginCategory(int(sys.argv[1]), category)
     if content:
