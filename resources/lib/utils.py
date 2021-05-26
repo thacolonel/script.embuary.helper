@@ -10,18 +10,18 @@ import xbmcaddon
 import xbmcgui
 import xbmcvfs
 import datetime
-import json
 import random
 import os
 import locale
 
-from resources.lib.helper import (ADDON, ADDON_ID, ADDON_DATA_IMG_PATH, DIALOG, addon_data, clear_playlists, condition, execute,
+from resources.lib.helper import (ADDON, ADDON_ID, ADDON_DATA_IMG_PATH, DIALOG, INFO, addon_data, clear_playlists, condition, execute,
                                   get_bool, get_library_tags, go_to_path, json_call, log, remove_quotes, set_library_tags,
                                   sync_library_tags, url_quote, url_unquote, winprop)
 from resources.lib.library import get_unwatched
 from resources.lib.json_map import JSON_MAP
 from resources.lib.image import ImageBlur, image_info
 from resources.lib.cinema_mode import CinemaMode
+from resources.lib.oscar_data import OSCAR_DATA
 
 ########################
 
@@ -736,3 +736,29 @@ def selecttags(params):
 
 def whitelisttags(params):
     sync_library_tags(recreate=True)
+
+
+def oscarviewer(params):
+    oscar_text = ''
+    headertxt = remove_quotes(params.get('header', ''))
+    bodytxt = remove_quotes(params.get('message', ''))
+    imdbid = remove_quotes(params.get('imdbid', ''))
+    oscar_item = OSCAR_DATA.get(imdbid, {})
+    log('Grr oscar_item: %s' % oscar_item, INFO)
+    oscars = oscar_item.get('awards', [])
+    annual = oscar_item.get('annual')
+    heading = annual + ' ' + headertxt
+    for i in oscars:
+        item_text = ''
+        category = i['category']
+        won = i['won']
+        nominee = i['nominee']
+        if won is True:
+            category = '[COLOR gold]' + category + '[/COLOR]'
+        if nominee != 'None':
+            item_text += '[B]' + category + '[/B][CR][I]' + nominee + '[/I]'
+        else:
+            item_text += '[B]' + category + '[/B]'
+        oscar_text += '[CR]' + item_text + '[CR]'
+
+    DIALOG.textviewer(heading, str(oscar_text))
