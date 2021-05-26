@@ -10,7 +10,7 @@ import xbmcvfs
 from operator import itemgetter
 
 from resources.lib.json_map import JSON_MAP
-from resources.lib.helper import ADDON, ADDON_ID, DIALOG, INFO, get_bool, get_cache, get_clean_path, get_date, get_joined_items, json_call, log, remove_quotes, set_plugincontent, url_quote, winprop, write_cache
+from resources.lib.helper import ADDON, ADDON_ID, DIALOG, INFO, get_bool, get_clean_path, get_date, get_joined_items, json_call, log, remove_quotes, set_plugincontent, url_quote, winprop
 from resources.lib.library import add_items, get_unwatched
 from resources.lib.image import CreateGenreThumb
 from resources.lib.AFI_100 import AFI_100
@@ -922,7 +922,7 @@ class PluginContent(object):
         try:
             if self.dbtitle:
                 json_query = json_call(self.method_item,
-                                       properties=['cast'],
+                                       properties=['cast', 'imdbnumber'],
                                        limit=1,
                                        query_filter=self.filter_title
                                        )
@@ -932,7 +932,7 @@ class PluginContent(object):
                     self.dbid = self._gettvshowid()
 
                 json_query = json_call(self.method_details,
-                                       properties=['cast'],
+                                       properties=['cast', 'imdbnumber'],
                                        params={self.param: int(self.dbid)}
                                        )
 
@@ -963,7 +963,6 @@ class PluginContent(object):
         except Exception:
             log('Get cast: No cast found.')
             return
-
         add_items(self.li, cast, type='cast', imdb=imdb)
 
 
@@ -1205,8 +1204,9 @@ class PluginContent(object):
     ''' Get AFI 100'''
 
     def getafi100(self):
-        cache_key = 'afi_100'
-        item_list = get_cache(cache_key)
+        # cache_key = 'afi_100'
+        # item_list = get_cache(cache_key)
+        item_list = []
         if not item_list:
             item_list = []
             afi_list = []
@@ -1227,7 +1227,7 @@ class PluginContent(object):
             # log(afi_list, INFO)
             for award in afi_list:
                 item_list.append(award['item'])
-            write_cache(cache_key, item_list)
+            # write_cache(cache_key, item_list)
 
         add_items(self.li, item_list, type=self.dbtype)
         set_plugincontent(content='%ss' % self.dbtype, category='AFI 100 Movies', custom_sort=True)
@@ -1238,7 +1238,8 @@ class PluginContent(object):
 
     def getbestpicture(self):
         cache_key = 'oscar.best_picture'
-        item_list = get_cache(cache_key)
+        # item_list = get_cache(cache_key)
+        item_list = []
         if not item_list:
             item_list = []
             oscar_list = []
@@ -1260,7 +1261,7 @@ class PluginContent(object):
             log('Oscar Best Picture', INFO)
             log(self.dbtype, INFO)
             log(item_list, INFO)
-            write_cache(cache_key, item_list)
+            # write_cache(cache_key, item_list)
 
         add_items(self.li, item_list, type=self.dbtype)
         set_plugincontent(content='%ss' % self.dbtype, category='Oscar Best Picture')
@@ -1281,7 +1282,8 @@ class PluginContent(object):
             cache_key = 'oscar.' + category + '.winners'
         else:
             cache_key = 'oscar.' + category + '.nominees'
-        item_list = get_cache(cache_key)
+        # item_list = get_cache(cache_key)
+        item_list = []
         if not item_list or refresh is True:
             item_list = []
             oscar_list = []
@@ -1354,7 +1356,7 @@ class PluginContent(object):
             # log('Oscar: ' + category, NOTICE)
             # log(self.dbtype, NOTICE)
             # log(item_list, NOTICE)
-            write_cache(cache_key, item_list)
+            # write_cache(cache_key, item_list)
 
         add_items(self.li, item_list, type=self.dbtype)
         set_plugincontent(content='%ss' % self.dbtype, category='Oscars', custom_sort=True)
@@ -1371,7 +1373,8 @@ class PluginContent(object):
 
     def getall(self):
         cache_key = 'test_get_all'
-        result = get_cache(cache_key)
+        # result = get_cache(cache_key)
+        result = []
         if not result:
             sort_args = remove_quotes(self.params.get('sort_args')) or None
             filters = self.filter_tag if self.tag else None
@@ -1385,6 +1388,6 @@ class PluginContent(object):
                                    query_filter=filters
                                    )
             result = json_query['result'][self.key_items]
-            write_cache(cache_key, result)
+            # write_cache(cache_key, result)
         add_items(self.li, result, type=self.dbtype)
         set_plugincontent(content='%ss' % self.dbtype, category='All Movies', custom_sort=False)

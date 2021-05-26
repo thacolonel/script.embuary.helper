@@ -3,7 +3,9 @@
 ########################
 import sys
 
-from resources.lib.helper import ADDON, ADDON_ID, DIALOG
+from resources.lib.helper import *
+from resources.lib.utils import *
+from resources.lib.cinema_mode import *
 
 ########################
 

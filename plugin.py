@@ -5,9 +5,9 @@ import sys
 import xbmcplugin
 import urllib.parse as urlparse
 
-from resources.lib.plugin_listing import PluginListing
-from resources.lib.plugin_content import PluginContent
-from resources.lib.plugin_actions import PluginActions
+from resources.lib.plugin_listing import *
+from resources.lib.plugin_content import *
+from resources.lib.plugin_actions import *
 
 ########################
 
