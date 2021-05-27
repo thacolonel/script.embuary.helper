@@ -434,11 +434,19 @@ def addon_data(file, content=False):
             json.dump(data, f)
 
 
-def set_plugincontent(content=None, category=None):
+def set_plugincontent(content=None, category=None, custom_sort=False):
     if category:
         xbmcplugin.setPluginCategory(int(sys.argv[1]), category)
     if content:
         xbmcplugin.setContent(int(sys.argv[1]), content)
+    if custom_sort is False:
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_TITLE)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_DATEADDED)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RATING)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_PLAYCOUNT)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_USER_RATING)
+        xbmc.executebuiltin('Container.SetSortMethod(xbmcplugin.SORT_METHOD_TITLE)')
 
 
 # def get_cache(key):

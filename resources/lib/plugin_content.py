@@ -1297,7 +1297,7 @@ class PluginContent(object):
             for item in result:
                 if category == 'all':
                     if winner is True:
-                        wins = OSCAR_DATA.get(item['imdbnumber'], {}).get('wins_total')
+                        wins = OSCAR_DATA.get(item['imdbnumber'], {}).get('wins_total', 0)
                         if wins > 0:
                             oscar_list.append({'item': item, 'premiered': item['year'], 'winner': True})
 
@@ -1315,10 +1315,9 @@ class PluginContent(object):
                             if category in ['best_actor', 'best_actress', 'best_supporting_actor',
                                             'best_supporting_actress']:
                                 for c in item['cast']:
-                                    if i['nominee'] == c['name'].encode('utf-8'):
-                                        if c.get('thumbnail'):
+                                    if i['nominee'] == c['name']:
+                                        if c.get('thumbnail') is not None:
                                             item['actor_icon'] = c['thumbnail']
-                                            # item['art']['poster'] = c['thumbnail']
                                         item['oscar_nominee'] = c['name']
                                         break
                                 if winner is True and i['won'] is True:

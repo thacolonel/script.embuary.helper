@@ -27,6 +27,7 @@ def add_items(li, json_query, type, searchstring=None, imdb=None):
             handle_cast(li, item, imdb)
 
 
+
 def handle_movies(li, item, searchstring=None):
     genre = item.get('genre', '')
     studio = item.get('studio', '')
