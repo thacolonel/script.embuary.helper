@@ -8,7 +8,7 @@ from __future__ import division
 import xbmc
 import xbmcvfs
 import os
-from PIL import Image,ImageOps,ImageEnhance
+from PIL import Image, ImageFilter, ImageOps, ImageEnhance
 
 from resources.lib.helper import ADDON, ADDON_DATA_IMG_PATH, ADDON_DATA_IMG_TEMP_PATH, DEBUG, ERROR, WARNING, log,  md5hash, touch_file, url_unquote,  winprop
 
@@ -71,7 +71,7 @@ class ImageBlur:
                 img = _openimage(self.image,ADDON_DATA_IMG_PATH,filename)
                 img.thumbnail((200, 200), Image.ANTIALIAS)
                 img = img.convert('RGB')
-                # img = img.filter(ImageFilter.GaussianBlur(self.radius))
+                img = img.filter(ImageFilter.GaussianBlur(self.radius))
 
                 if self.saturation:
                     converter = ImageEnhance.Color(img)

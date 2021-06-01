@@ -83,6 +83,14 @@ def handle_movies(li, item, searchstring=None):
     # Add oscar and AFI properties
     oscar_item = OSCAR_DATA.get(item['imdbnumber'], {})
     afi_item = AFI_100.get(item['imdbnumber'], '')
+    oscar_awards = oscar_item.get('awards', [])
+    for award in oscar_awards:
+        if award['tag_name'] == 'best_director':
+            if award['won'] is True:
+                li_item.setProperty('oscar_director', 'True')
+            else:
+                li_item.setProperty('oscar_director', 'False')
+
     li_item.setProperty('oscars', str(oscar_item.get('text', '')))
     li_item.setProperty('oscar_wins', str(oscar_item.get('wins_total', '')))
     li_item.setProperty('oscar_nominee', item.get('oscar_nominee', item['title']))

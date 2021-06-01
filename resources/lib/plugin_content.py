@@ -15,6 +15,8 @@ from resources.lib.library import add_items, get_unwatched
 from resources.lib.image import CreateGenreThumb
 from resources.lib.AFI_100 import AFI_100
 from resources.lib.oscar_data import OSCAR_DATA
+from resources.lib.imdb import get_imdb_250
+from resources.lib.database import update_user_rating
 
 ########################
 
@@ -1390,3 +1392,45 @@ class PluginContent(object):
             # write_cache(cache_key, result)
         add_items(self.li, result, type=self.dbtype)
         set_plugincontent(content='%ss' % self.dbtype, category='All Movies', custom_sort=False)
+
+    def updatetop250(self):
+        # DIALOG.notification(ADDON_ID, 'Starting Update Imdb Top 250')
+        update_top250()
+
+
+def update_top250():
+    json_query = json_call('VideoLibrary.GetMovies',
+                           properties=['imdbnumber', 'top250', 'title', 'userrating'])
+    try:
+        movies = json_query['result']['movies']
+    except Exception:
+        log('No movies found in library to update Imdb 250.', INFO)
+    else:
+        all_250 = get_imdb_250()
+        top250_ids = all_250.keys()
+        updates = list()
+        for i in movies:
+            movie_title = i.get('title')
+            movie_id = i.get('movieid')
+            imdb_id = i.get('imdbnumber')
+            user_rating = i.get('userrating')
+            current_rank = i.get('top250')
+            if imdb_id in top250_ids:
+                new_rank = all_250[imdb_id]
+                if int(current_rank) != int(new_rank):
+                    params = {'movieid': movie_id, 'top250': int(new_rank)}
+                    json_call('VideoLibrary.SetMovieDetails', params=params)
+                    update_user_rating(movie_id, user_rating)
+                    updates.append(imdb_id)
+                    if current_rank in [0, None]:
+                        DIALOG.notification('Imdb top 250 Update', f'{movie_title} added as # {new_rank}')
+                    else:
+                        DIALOG.notification('Imdb top 250 Update', f'{movie_title} is now # {new_rank}')
+            else:
+                if current_rank not in [None, 0]:
+                    params = {'movieid': movie_id, 'top250': None}
+                    json_call('VideoLibrary.SetMovieDetails', params=params)
+                    update_user_rating(movie_id, user_rating)
+                    log(f'{movie_title} is no longer ranked', INFO)
+
+        DIALOG.notification('Imdb top 250 Update', f'{len(updates)} movies were updated')
