@@ -921,26 +921,41 @@ class PluginContent(object):
     ''' get cast of item
     '''
     def getcast(self):
+        imdb = None
         try:
             if self.dbtitle:
-                json_query = json_call(self.method_item,
-                                       properties=['cast', 'imdbnumber'],
-                                       limit=1,
-                                       query_filter=self.filter_title
-                                       )
+                if self.dbtype == 'movie':
+                    json_query = json_call(self.method_item,
+                                           properties=['cast', 'imdbnumber'],
+                                           limit=1,
+                                           query_filter=self.filter_title
+                                           )
+                else:
+                    json_query = json_call(self.method_item,
+                                           properties=['cast'],
+                                           limit=1,
+                                           query_filter=self.filter_title
+                                           )
 
             elif self.dbid:
                 if self.dbtype == 'tvshow' and self.idtype in ['season', 'episode']:
                     self.dbid = self._gettvshowid()
 
-                json_query = json_call(self.method_details,
-                                       properties=['cast', 'imdbnumber'],
-                                       params={self.param: int(self.dbid)}
-                                       )
+                if self.dbtype == 'movie':
+                    json_query = json_call(self.method_details,
+                                           properties=['cast', 'imdbnumber'],
+                                           params={self.param: int(self.dbid)}
+                                           )
+                else:
+                    json_query = json_call(self.method_details,
+                                           properties=['cast'],
+                                           params={self.param: int(self.dbid)}
+                                           )
 
             if self.key_details in json_query['result']:
                 cast = json_query['result'][self.key_details]['cast']
-                imdb = json_query['result'][self.key_details]['imdbnumber']
+                if self.dbtype == 'movie':
+                    imdb = json_query['result'][self.key_details].get('imdbnumber')
 
                 ''' Fallback to TV show cast if episode has no cast stored
                 '''
@@ -948,16 +963,16 @@ class PluginContent(object):
                     tvshow_id = self._gettvshowid(idtype='episode', dbid=self.dbid)
 
                     json_query = json_call('VideoLibrary.GetTVShowDetails',
-                                           properties=['cast', 'imdbnumber'],
+                                           properties=['cast'],
                                            params={'tvshowid': int(tvshow_id)}
                                            )
 
                     cast = json_query['result']['tvshowdetails']['cast']
-                    imdb = json_query['result'][self.key_details]['imdbnumber']
+                    imdb = json_query['result'][self.key_details].get('imdbnumber')
 
             else:
                 cast = json_query['result'][self.key_items][0]['cast']
-                imdb = json_query['result'][self.key_details]['imdbnumber']
+                imdb = json_query['result'][self.key_details].get('imdbnumber')
 
             if not cast:
                 raise Exception
@@ -1433,4 +1448,5 @@ def update_top250():
                     update_user_rating(movie_id, user_rating)
                     log(f'{movie_title} is no longer ranked', INFO)
 
-        DIALOG.notification('Imdb top 250 Update', f'{len(updates)} movies were updated')
+        if len(updates) > 0:
+            DIALOG.notification('Imdb top 250 Update', f'{len(updates)} movies were updated')

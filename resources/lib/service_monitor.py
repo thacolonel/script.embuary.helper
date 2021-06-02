@@ -6,7 +6,7 @@
 import xbmc
 import random
 
-from resources.lib.helper import ADDON, ADDON_ID, DIALOG, condition, json_call, log, reload_widgets, sync_library_tags, winprop, INFO
+from resources.lib.helper import ADDON, ADDON_ID, DIALOG, condition, json_call, log, reload_widgets, sync_library_tags, winprop, DEBUG
 from resources.lib.image import ImageBlur
 from resources.lib.player_monitor import PlayerMonitor
 from resources.lib.plugin_content import update_top250
@@ -17,7 +17,7 @@ NOTIFICATION_METHOD = ['VideoLibrary.OnUpdate',
                        'VideoLibrary.OnScanFinished',
                        'VideoLibrary.OnCleanFinished',
                        'AudioLibrary.OnUpdate',
-                       'AudioLibrary.OnScanFinished'
+                       'AudioLibrary.OnScanFinished', 'Other.LibraryChanged'
                        ]
 
 ########################
@@ -36,16 +36,14 @@ class Service(xbmc.Monitor):
             self.keep_alive()
 
     def onNotification(self, sender, method, data):
+        log('Notify change', DEBUG)
+        log(data, DEBUG)
         if ADDON_ID in sender and 'restart' in method:
             self.restart = True
 
         if method in NOTIFICATION_METHOD:
             sync_library_tags()
             update_top250()
-            log('Notify change', INFO)
-            DIALOG.notification(ADDON_ID, data)
-            log(data)
-
 
             if method.endswith('Finished'):
                 reload_widgets(instant=True, reason=method)

@@ -8,7 +8,6 @@ def get_imdb_250():
     top_250 = {"Grr": "Blah"}
     url = 'https://www.imdb.com/chart/top'
     response = requests.get(url)
-    # soup = BeautifulSoup(response.text, 'lxml')
     soup = BeautifulSoup(response.text, 'html.parser')
     lister_list = soup.find('tbody', {'class': 'lister-list'})
     trs = lister_list.findAll('tr')

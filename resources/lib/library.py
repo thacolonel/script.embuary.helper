@@ -93,6 +93,7 @@ def handle_movies(li, item, searchstring=None):
 
     li_item.setProperty('oscars', str(oscar_item.get('text', '')))
     li_item.setProperty('oscar_wins', str(oscar_item.get('wins_total', '')))
+    li_item.setProperty('oscar_noms', str(oscar_item.get('noms_total', '')))
     li_item.setProperty('oscar_nominee', item.get('oscar_nominee', item['title']))
     li_item.setProperty('oscar_year', str(item.get('oscar_year', item['year'])))
     li_item.setProperty('oscar_winner', str(item.get('oscar_winner', '')))
@@ -316,8 +317,6 @@ def handle_cast(li, item, imdb):
     li_item = xbmcgui.ListItem(item['name'], offscreen=True)
     for i in oscar_awards:
         if i['nominee'] == item['name']:
-            # log('Ding Ding')
-            # log(item['name'], NOTICE)
             li_item.setProperty('oscar', str(i['won']))
 
     li_item.setLabel(item['name'])
