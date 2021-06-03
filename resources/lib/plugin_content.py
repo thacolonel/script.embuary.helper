@@ -3,6 +3,7 @@
 
 ########################
 
+import os
 import random
 import xbmc
 import xbmcgui
@@ -10,7 +11,7 @@ import xbmcvfs
 from operator import itemgetter
 
 from resources.lib.json_map import JSON_MAP
-from resources.lib.helper import ADDON, ADDON_ID, DIALOG, INFO, get_bool, get_clean_path, get_date, get_joined_items, json_call, log, remove_quotes, set_plugincontent, url_quote, winprop
+from resources.lib.helper import ADDON, ADDON_ID, DIALOG, INFO, get_bool, get_clean_path, get_date, get_joined_items, json_call, log, remove_quotes, set_plugincontent, url_quote, winprop, get_cache, write_cache
 from resources.lib.library import add_items, get_unwatched
 from resources.lib.image import CreateGenreThumb
 from resources.lib.AFI_100 import AFI_100
@@ -741,7 +742,6 @@ class PluginContent(object):
 
         json_query = json_call('VideoLibrary.GetMovies',
                                properties=JSON_MAP['movie_properties'],
-                               sort=self.sort_random,
                                query_filter={'and': [{'or': filters}, {'operator': 'isnot', 'field': 'title', 'value': title}]}
                                )
         try:
@@ -800,7 +800,6 @@ class PluginContent(object):
             if self.dbcontent != 'tvshow':
                 movie_query = json_call('VideoLibrary.GetMovies',
                                         properties=JSON_MAP['movie_properties'],
-                                        sort=self.sort_random,
                                         query_filter={'and': filters}
                                         )
 
@@ -814,7 +813,6 @@ class PluginContent(object):
             if self.dbcontent != 'movie':
                 tvshow_query = json_call('VideoLibrary.GetTVShows',
                                          properties=JSON_MAP['tvshow_properties'],
-                                         sort=self.sort_random,
                                          query_filter={'and': filters}
                                          )
 
@@ -1221,9 +1219,8 @@ class PluginContent(object):
     ''' Get AFI 100'''
 
     def getafi100(self):
-        # cache_key = 'afi_100'
-        # item_list = get_cache(cache_key)
-        item_list = []
+        cache_key = 'afi_100'
+        item_list = get_cache(cache_key)
         if not item_list:
             item_list = []
             afi_list = []
@@ -1244,7 +1241,7 @@ class PluginContent(object):
             # log(afi_list, INFO)
             for award in afi_list:
                 item_list.append(award['item'])
-            # write_cache(cache_key, item_list)
+            write_cache(cache_key, item_list)
 
         add_items(self.li, item_list, type=self.dbtype)
         set_plugincontent(content='%ss' % self.dbtype, category='AFI 100 Movies', custom_sort=True)
@@ -1255,8 +1252,7 @@ class PluginContent(object):
 
     def getbestpicture(self):
         cache_key = 'oscar.best_picture'
-        # item_list = get_cache(cache_key)
-        item_list = []
+        item_list = get_cache(cache_key)
         if not item_list:
             item_list = []
             oscar_list = []
@@ -1278,7 +1274,7 @@ class PluginContent(object):
             log('Oscar Best Picture', INFO)
             log(self.dbtype, INFO)
             log(item_list, INFO)
-            # write_cache(cache_key, item_list)
+            write_cache(cache_key, item_list)
 
         add_items(self.li, item_list, type=self.dbtype)
         set_plugincontent(content='%ss' % self.dbtype, category='Oscar Best Picture')
@@ -1299,8 +1295,7 @@ class PluginContent(object):
             cache_key = 'oscar.' + category + '.winners'
         else:
             cache_key = 'oscar.' + category + '.nominees'
-        # item_list = get_cache(cache_key)
-        item_list = []
+        item_list = get_cache(cache_key)
         if not item_list or refresh is True:
             item_list = []
             oscar_list = []
@@ -1365,16 +1360,23 @@ class PluginContent(object):
                                     oscar_list.append({'item': item, 'premiered': item['oscar_year'],
                                                        'winner': item['oscar_winner']})
 
+
             oscar_list = sorted(oscar_list, key=itemgetter('premiered', 'winner'), reverse=True)
             for oscar in oscar_list:
+                # oscar_item = oscar['item']
+                # if oscar_item['oscar_winner'] is True:
+                #     rating = 2
+                # else:
+                #     rating = 1
+                # params = {'movieid': oscar_item['movieid'], "ratings": {"oscars": {"rating": rating}}}
+                # json_call('VideoLibrary.SetMovieDetails', params=params)
+                # update_user_rating(oscar_item['movieid'], oscar_item['userrating'])
                 item_list.append(oscar['item'])
 
-            # log('Oscar: ' + category, NOTICE)
-            # log(self.dbtype, NOTICE)
-            # log(item_list, NOTICE)
-            # write_cache(cache_key, item_list)
 
-        add_items(self.li, item_list, type=self.dbtype)
+            write_cache(cache_key, item_list)
+
+        add_items(self.li, item_list, type=self.dbtype, oscars=True)
         set_plugincontent(content='%ss' % self.dbtype, category='Oscars', custom_sort=True)
 
     def refreshoscars(self):
@@ -1389,8 +1391,7 @@ class PluginContent(object):
 
     def getall(self):
         cache_key = 'test_get_all'
-        # result = get_cache(cache_key)
-        result = []
+        result = get_cache(cache_key)
         if not result:
             sort_args = remove_quotes(self.params.get('sort_args')) or None
             filters = self.filter_tag if self.tag else None
@@ -1404,7 +1405,7 @@ class PluginContent(object):
                                    query_filter=filters
                                    )
             result = json_query['result'][self.key_items]
-            # write_cache(cache_key, result)
+            write_cache(cache_key, result)
         add_items(self.li, result, type=self.dbtype)
         set_plugincontent(content='%ss' % self.dbtype, category='All Movies', custom_sort=False)
 
@@ -1438,9 +1439,9 @@ def update_top250():
                     update_user_rating(movie_id, user_rating)
                     updates.append(imdb_id)
                     if current_rank in [0, None]:
-                        DIALOG.notification('Imdb top 250 Update', f'{movie_title} added as # {new_rank}')
+                        DIALOG.notification('Imdb top 250 Update', f'{movie_title} added as #{new_rank}')
                     else:
-                        DIALOG.notification('Imdb top 250 Update', f'{movie_title} is now # {new_rank}')
+                        DIALOG.notification('Imdb top 250 Update', f'{movie_title} changed from #{current_rank} to #{new_rank}')
             else:
                 if current_rank not in [None, 0]:
                     params = {'movieid': movie_id, 'top250': None}

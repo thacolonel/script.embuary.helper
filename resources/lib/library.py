@@ -5,16 +5,18 @@
 import xbmc
 import xbmcgui
 
-from resources.lib.helper import condition, get_joined_items, log
+from resources.lib.helper import condition, get_joined_items, log, get_cache, write_cache
 from resources.lib.oscar_data import OSCAR_DATA
 from resources.lib.AFI_100 import AFI_100
 
 ########################
 
-def add_items(li, json_query, type, searchstring=None, imdb=None):
+def add_items(li, json_query, type, searchstring=None, imdb=None, oscars=False):
+    # grr = []
     for item in json_query:
         if type == 'movie':
-            handle_movies(li, item, searchstring)
+            result = handle_movies(li, item, searchstring)
+            # grr.append(result)
         elif type ==  'tvshow':
             handle_tvshows(li, item, searchstring)
         elif type == 'season':
@@ -25,7 +27,8 @@ def add_items(li, json_query, type, searchstring=None, imdb=None):
             handle_genre(li, item)
         elif type == 'cast':
             handle_cast(li, item, imdb)
-
+    # if oscars is True:
+    #     write_cache('test', grr)
 
 
 def handle_movies(li, item, searchstring=None):
@@ -122,6 +125,7 @@ def handle_movies(li, item, searchstring=None):
         li_item.setProperty('searchstring', searchstring)
 
     li.append((item['file'], li_item, False))
+    return li
 
 
 def handle_tvshows(li, item, searchstring=None):

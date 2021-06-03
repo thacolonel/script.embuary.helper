@@ -3,13 +3,18 @@
 ########################
 import sys
 import xbmcplugin
+import pickle
+import threading
 import urllib.parse as urlparse
-
 from resources.lib.plugin_listing import *
 from resources.lib.plugin_content import *
 from resources.lib.plugin_actions import *
+from resources.lib.utils import get_pickle, save_pickle
 
 ########################
+
+
+
 
 class Main:
     def __init__(self):
@@ -52,6 +57,54 @@ class Main:
         plugin = PluginContent(self.params,li)
         self._execute(plugin,self.info)
         self._additems(li)
+
+    # def getinfos(self):
+    #     li = list()
+    #     plugin = PluginContent(self.params, li)
+    #     if plugin.params.get('info') == 'getoscars':
+    #         winner = plugin.params.get('winner')
+    #         category = plugin.params.get('category')
+    #         thread = threading.Thread(target=plugin.getoscars, kwargs={'category': category, 'winner': winner})
+    #         # thread.daemon = True
+    #         thread.start()
+    #         thread = threading.Thread(target=self.grr, args=(plugin, li))
+    #         # thread.daemon = True
+    #         thread.start()
+    #
+    #
+    # def grr(self, plugin, li):
+    #         self._execute(plugin, self.info)
+    #         self._additems(li)
+
+    # def getinfos(self):
+    #     li = list()
+    #     plugin = PluginContent(self.params, li)
+    #     # self._execute(plugin,self.info)
+    #
+    #     if plugin.params.get('info') == 'getoscars':
+    #         category = plugin.params.get('category')
+    #         winner = plugin.params.get('winner')
+    #         if category is not None and winner is not None:
+    #             if winner == 'no':
+    #                 file_name = 'oscar.' + category + '.nominees.blob'
+    #                 data = get_pickle(file_name)
+    #                 # item_list = get_cache(cache_key)
+    #             else:
+    #                 file_name = 'oscar.' + category + '.winners.blob'
+    #                 data = get_pickle(file_name)
+    #                 # item_list = get_cache(cache_key)
+    #             if data is None:
+    #                 self._execute(plugin, self.info)
+    #                 save_pickle(file_name, li)
+    #                 self._additems(li)
+    #                 log('category to pickle', INFO)
+    #                 log(category, INFO)
+    #             else:
+    #                 log('category already pickle', INFO)
+    #                 log(category, INFO)
+    #                 self._additems(li)
+    #     else:
+    #         self._additems(li)
 
     def actions(self):
         plugin = PluginActions(self.params)
