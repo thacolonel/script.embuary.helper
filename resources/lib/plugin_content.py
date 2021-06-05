@@ -11,7 +11,7 @@ import xbmcvfs
 from operator import itemgetter
 
 from resources.lib.json_map import JSON_MAP
-from resources.lib.helper import ADDON, ADDON_ID, DIALOG, INFO, get_bool, get_clean_path, get_date, get_joined_items, json_call, log, remove_quotes, set_plugincontent, url_quote, winprop, get_cache, write_cache
+from resources.lib.helper import ADDON, ADDON_ID, DIALOG, INFO, PLAYER, get_bool, get_clean_path, get_date, get_joined_items, json_call, log, remove_quotes, set_plugincontent, url_quote, winprop, get_cache, write_cache
 from resources.lib.library import add_items, get_unwatched
 from resources.lib.image import CreateGenreThumb
 from resources.lib.AFI_100 import AFI_100
@@ -1438,10 +1438,11 @@ def update_top250():
                     json_call('VideoLibrary.SetMovieDetails', params=params)
                     update_user_rating(movie_id, user_rating)
                     updates.append(imdb_id)
-                    if current_rank in [0, None]:
-                        DIALOG.notification('Imdb top 250 Update', f'{movie_title} added as #{new_rank}')
-                    else:
-                        DIALOG.notification('Imdb top 250 Update', f'{movie_title} changed from #{current_rank} to #{new_rank}')
+                    if not PLAYER.isPlayingVideo():
+                        if current_rank in [0, None]:
+                            DIALOG.notification('Imdb top 250 Update', f'{movie_title} added as #{new_rank}')
+                        else:
+                            DIALOG.notification('Imdb top 250 Update', f'{movie_title} changed from #{current_rank} to #{new_rank}')
             else:
                 if current_rank not in [None, 0]:
                     params = {'movieid': movie_id, 'top250': None}
@@ -1449,5 +1450,5 @@ def update_top250():
                     update_user_rating(movie_id, user_rating)
                     log(f'{movie_title} is no longer ranked', INFO)
 
-        if len(updates) > 0:
+        if len(updates) > 0 and not PLAYER.isPlayingVideo():
             DIALOG.notification('Imdb top 250 Update', f'{len(updates)} movies were updated')
