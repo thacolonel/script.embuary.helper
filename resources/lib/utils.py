@@ -23,6 +23,7 @@ from resources.lib.json_map import JSON_MAP
 from resources.lib.image import ImageBlur, image_info
 from resources.lib.cinema_mode import CinemaMode
 from resources.lib.oscar_data import OSCAR_DATA
+from resources.lib.emmy_data import EMMY_DATA
 
 ########################
 
@@ -763,6 +764,70 @@ def oscarviewer(params):
         oscar_text += '[CR]' + item_text + '[CR]'
 
     DIALOG.textviewer(heading, str(oscar_text))
+
+
+
+def emmyviewer(params):
+    emmy_text = ''
+    # heading = 'Primetime Emmy Awards'
+    headertxt = remove_quotes(params.get('header', ''))
+    bodytxt = remove_quotes(params.get('message', ''))
+    tvdb_id = remove_quotes(params.get('tvdbid', ''))
+    emmy_item = EMMY_DATA.get(tvdb_id, {})
+    emmys = emmy_item.get('emmys', [])
+    heading = headertxt
+    for e in emmys:
+        category = e['category']
+        nominees = e['nominees']
+        cat_wins = e['cat_wins']
+        total_wins = 0
+        total_noms = 0
+        if cat_wins > 0:
+            emmy_text += f'[CR][COLOR gold][B]{category}[/B][/COLOR][CR]'
+        else:
+            emmy_text += f'[CR][B]{category}[/B][CR]'
+        for n in nominees:
+            nominee = n['nominee']
+            nom_years = str(n['awards']['nom_years']).replace('[', '(').replace(']', ')')
+            noms = n['awards']['noms']
+            wins = n['awards']['wins']
+            win_years = str(n['awards']['win_years']).replace('[', '(').replace(']', ')')
+            if wins > 0:
+                total_wins += 1
+                total_noms += 1
+            else:
+                total_noms += 1
+
+            if nominee is None:
+                text = ''
+            else:
+                text = f'{nominee} - '
+
+            if wins == 1 and noms > 1 :
+                text += f'{wins} win {win_years} and {noms} other nominations {nom_years}[CR]'
+            elif wins > 1 and noms > 1 :
+                text += f'{wins} wins {win_years} and {noms} other nominations {nom_years}[CR]'
+            elif wins == 1 and noms == 1:
+                text += f'{wins} win {win_years} and {noms} other nomination {nom_years}[CR]'
+            elif wins > 1 and noms == 1 :
+                text += f'{wins} wins {win_years} and {noms} other nomination {nom_years}[CR]'
+            elif wins > 1 and noms == 0:
+                text += f'{wins} wins {win_years}[CR]'
+            elif wins == 1 and noms == 0:
+                text += f'{wins} win {win_years}[CR]'
+            elif wins == 0 and noms > 1:
+                text += f'{noms} nominations {nom_years}[CR]'
+            elif wins == 0 and noms == 1:
+                text += f'{noms} nomination {nom_years}[CR]'
+
+            else:
+                text = ''
+
+
+
+            emmy_text += text
+
+    DIALOG.textviewer(heading, str(emmy_text))
 
 
 def save_pickle(file_name, data):

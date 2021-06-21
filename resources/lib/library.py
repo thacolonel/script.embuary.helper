@@ -5,8 +5,9 @@
 import xbmc
 import xbmcgui
 
-from resources.lib.helper import condition, get_joined_items, log, get_cache, write_cache, DIALOG
+from resources.lib.helper import condition, get_joined_items, log, get_cache, write_cache, DIALOG, INFO
 from resources.lib.oscar_data import OSCAR_DATA
+from resources.lib.emmy_data import EMMY_DATA
 from resources.lib.AFI_100 import AFI_100
 
 ########################
@@ -189,6 +190,32 @@ def handle_tvshows(li, item, searchstring=None):
 
     _set_unique_properties(li_item,genre,'genre')
     _set_unique_properties(li_item,studio,'studio')
+
+    # Add emmy properties
+    emmy_item = EMMY_DATA.get(item['imdbnumber'], {})
+    best_show = []
+    emmy_noms = []
+    if emmy_item:
+        for award in emmy_item.get('emmys'):
+            if award['cat_noms'] > 0:
+                emmy_noms.append(award['category'])
+            if award['rank'] == 1:
+                if award['cat_wins'] > 0 and not best_show:
+                    best_show.append('True')
+                if award['cat_wins'] == 0 and award['cat_noms'] > 0 and not best_show:
+                    best_show.append('False')
+
+    if best_show:
+        li_item.setProperty('best_show', str(best_show[0]))
+
+    if emmy_noms:
+        li_item.setProperty('good_emmys', str(emmy_item.get('text', '')))
+
+
+    li_item.setProperty('emmys', str(emmy_item.get('text', '')))
+    li_item.setProperty('emmy_wins', str(emmy_item.get('wins_total', '')))
+    li_item.setProperty('emmy_noms', str(emmy_item.get('noms_total', '')))
+
 
     li_item.setProperty('totalseasons', str(season))
     li_item.setProperty('totalepisodes', str(episode))
