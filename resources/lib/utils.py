@@ -825,7 +825,7 @@ def emmyviewer(params):
 
 
 
-            emmy_text += text
+            emmy_text += f'[I]{text}[/I]'
 
     DIALOG.textviewer(heading, str(emmy_text))
 

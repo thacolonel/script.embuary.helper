@@ -930,7 +930,7 @@ class PluginContent(object):
                                            )
                 else:
                     json_query = json_call(self.method_item,
-                                           properties=['cast'],
+                                           properties=['cast', 'imdbnumber'],
                                            limit=1,
                                            query_filter=self.filter_title
                                            )
@@ -946,13 +946,13 @@ class PluginContent(object):
                                            )
                 else:
                     json_query = json_call(self.method_details,
-                                           properties=['cast'],
+                                           properties=['cast', 'imdbnumber'],
                                            params={self.param: int(self.dbid)}
                                            )
 
             if self.key_details in json_query['result']:
                 cast = json_query['result'][self.key_details]['cast']
-                if self.dbtype == 'movie':
+                if self.dbtype in ['movie', 'tvshow']:
                     imdb = json_query['result'][self.key_details].get('imdbnumber')
 
                 ''' Fallback to TV show cast if episode has no cast stored
@@ -1376,7 +1376,7 @@ class PluginContent(object):
 
             write_cache(cache_key, item_list)
 
-        add_items(self.li, item_list, type=self.dbtype, oscars=True)
+        add_items(self.li, item_list, type=self.dbtype)
         set_plugincontent(content='%ss' % self.dbtype, category='Oscars', custom_sort=True)
 
     def refreshoscars(self):

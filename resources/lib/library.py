@@ -12,12 +12,11 @@ from resources.lib.AFI_100 import AFI_100
 
 ########################
 
-def add_items(li, json_query, type, searchstring=None, imdb=None, oscars=False):
-    # grr = []
+def add_items(li, json_query, type, searchstring=None, imdb=None):
+
     for item in json_query:
         if type == 'movie':
-            result = handle_movies(li, item, searchstring)
-            # grr.append(result)
+            handle_movies(li, item, searchstring)
         elif type ==  'tvshow':
             handle_tvshows(li, item, searchstring)
         elif type == 'season':
@@ -28,8 +27,6 @@ def add_items(li, json_query, type, searchstring=None, imdb=None, oscars=False):
             handle_genre(li, item)
         elif type == 'cast':
             handle_cast(li, item, imdb)
-    # if oscars is True:
-    #     write_cache('test', grr)
 
 
 def handle_movies(li, item, searchstring=None):
@@ -206,7 +203,7 @@ def handle_tvshows(li, item, searchstring=None):
                     best_show.append('False')
 
     if best_show:
-        li_item.setProperty('best_show', str(best_show[0]))
+        li_item.setProperty('emmy_best_show', str(best_show[0]))
 
     if emmy_noms:
         li_item.setProperty('good_emmys', str(emmy_item.get('text', '')))
@@ -353,11 +350,26 @@ def handle_episodes(li, item):
 
 def handle_cast(li, item, imdb):
     oscar_awards = OSCAR_DATA.get(imdb, {}).get('awards', {})
-
+    emmy_awards = EMMY_DATA.get(imdb, {}).get('emmys', [])
+    log('Emmy Awards', INFO)
+    log(imdb, INFO)
+    log(emmy_awards, INFO)
+    winners = []
     li_item = xbmcgui.ListItem(item['name'], offscreen=True)
     for i in oscar_awards:
         if i['nominee'] == item['name']:
             li_item.setProperty('oscar', str(i['won']))
+    for i in emmy_awards:
+        if i['rank'] in [2, 3, 4, 5]:
+            for n in i['nominees']:
+                if n['nominee'] == item['name']:
+                    if n['awards']['wins'] > 0:
+                        li_item.setProperty('emmy', 'True')
+                        winners.append(item['name'])
+                        break
+                    else:
+                        if item['name'] not in winners:
+                            li_item.setProperty('emmy', 'False')
 
     li_item.setLabel(item['name'])
     li_item.setLabel2(item['role'])
