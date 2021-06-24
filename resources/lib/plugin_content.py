@@ -939,19 +939,21 @@ class PluginContent(object):
                 if self.dbtype == 'tvshow' and self.idtype in ['season', 'episode']:
                     self.dbid = self._gettvshowid()
 
-                if self.dbtype == 'movie':
+                if self.dbtype in ['movie', 'tvshow']:
                     json_query = json_call(self.method_details,
                                            properties=['cast', 'imdbnumber'],
                                            params={self.param: int(self.dbid)}
+
                                            )
                 else:
                     json_query = json_call(self.method_details,
-                                           properties=['cast', 'imdbnumber'],
+                                           properties=['cast'],
                                            params={self.param: int(self.dbid)}
                                            )
 
             if self.key_details in json_query['result']:
                 cast = json_query['result'][self.key_details]['cast']
+
                 if self.dbtype in ['movie', 'tvshow']:
                     imdb = json_query['result'][self.key_details].get('imdbnumber')
 
@@ -978,7 +980,7 @@ class PluginContent(object):
         except Exception:
             log('Get cast: No cast found.')
             return
-        add_items(self.li, cast, type='cast', imdb=imdb)
+        add_items(self.li, cast, type='cast', imdb=imdb, dbtype=self.dbtype)
 
 
     ''' get full cast of movie set
@@ -1438,11 +1440,11 @@ def update_top250():
                     json_call('VideoLibrary.SetMovieDetails', params=params)
                     update_user_rating(movie_id, user_rating)
                     updates.append(imdb_id)
-                    if not PLAYER.isPlayingVideo():
-                        if current_rank in [0, None]:
-                            DIALOG.notification('Imdb top 250 Update', f'{movie_title} added as #{new_rank}')
-                        else:
-                            DIALOG.notification('Imdb top 250 Update', f'{movie_title} changed from #{current_rank} to #{new_rank}')
+                    # if not PLAYER.isPlayingVideo():
+                    #     if current_rank in [0, None]:
+                    #         DIALOG.notification('Imdb top 250 Update', f'{movie_title} added as #{new_rank}')
+                    #     else:
+                    #         DIALOG.notification('Imdb top 250 Update', f'{movie_title} changed from #{current_rank} to #{new_rank}')
             else:
                 if current_rank not in [None, 0]:
                     params = {'movieid': movie_id, 'top250': None}

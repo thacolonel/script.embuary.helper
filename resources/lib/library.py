@@ -12,7 +12,7 @@ from resources.lib.AFI_100 import AFI_100
 
 ########################
 
-def add_items(li, json_query, type, searchstring=None, imdb=None):
+def add_items(li, json_query, type, searchstring=None, imdb=None, dbtype=None):
 
     for item in json_query:
         if type == 'movie':
@@ -26,7 +26,7 @@ def add_items(li, json_query, type, searchstring=None, imdb=None):
         elif type == 'genre':
             handle_genre(li, item)
         elif type == 'cast':
-            handle_cast(li, item, imdb)
+            handle_cast(li, item, imdb, dbtype)
 
 
 def handle_movies(li, item, searchstring=None):
@@ -86,29 +86,30 @@ def handle_movies(li, item, searchstring=None):
     afi_item = AFI_100.get(item['imdbnumber'], '')
     oscar_awards = oscar_item.get('awards', [])
     best_picture = []
-    for award in oscar_awards:
-        if award['tag_name'] == 'best_director':
-            if award['won'] is True:
-                li_item.setProperty('oscar_director', 'True')
-            else:
-                li_item.setProperty('oscar_director', 'False')
+    if oscar_awards:
+        for award in oscar_awards:
+            if award['tag_name'] == 'best_director':
+                if award['won'] is True:
+                    li_item.setProperty('oscar_director', 'True')
+                else:
+                    li_item.setProperty('oscar_director', 'False')
 
-        if award['tag_name'] == 'best_picture':
-            if award['won'] is True:
-                best_picture.append('True')
-            else:
-                best_picture.append('False')
-    if best_picture:
-        li_item.setProperty('oscar_picture', str(best_picture[0]))
+            if award['tag_name'] == 'best_picture':
+                if award['won'] is True:
+                    best_picture.append('True')
+                else:
+                    best_picture.append('False')
+        if best_picture:
+            li_item.setProperty('oscar_picture', str(best_picture[0]))
 
-    li_item.setProperty('oscars', str(oscar_item.get('text', '')))
-    li_item.setProperty('oscar_wins', str(oscar_item.get('wins_total', '')))
-    li_item.setProperty('oscar_noms', str(oscar_item.get('noms_total', '')))
-    li_item.setProperty('oscar_nominee', item.get('oscar_nominee', item['title']))
-    li_item.setProperty('oscar_year', str(item.get('oscar_year', item['year'])))
-    li_item.setProperty('oscar_winner', str(item.get('oscar_winner', '')))
-    li_item.setProperty('oscar_category', item.get('oscar_category', ''))
-    li_item.setProperty('actor_icon', item.get('actor_icon', ''))
+        li_item.setProperty('oscars', str(oscar_item.get('text', '')))
+        li_item.setProperty('oscar_wins', str(oscar_item.get('wins_total', '')))
+        li_item.setProperty('oscar_noms', str(oscar_item.get('noms_total', '')))
+        li_item.setProperty('oscar_nominee', item.get('oscar_nominee', item['title']))
+        li_item.setProperty('oscar_year', str(item.get('oscar_year', item['year'])))
+        li_item.setProperty('oscar_winner', str(item.get('oscar_winner', '')))
+        li_item.setProperty('oscar_category', item.get('oscar_category', ''))
+        li_item.setProperty('actor_icon', item.get('actor_icon', ''))
     li_item.setProperty('AFI_100', str(afi_item))
 
     li_item.setProperty('resumetime', str(item['resume']['position']))
@@ -348,28 +349,27 @@ def handle_episodes(li, item):
     li.append((item['file'], li_item, False))
 
 
-def handle_cast(li, item, imdb):
-    oscar_awards = OSCAR_DATA.get(imdb, {}).get('awards', {})
-    emmy_awards = EMMY_DATA.get(imdb, {}).get('emmys', [])
-    log('Emmy Awards', INFO)
-    log(imdb, INFO)
-    log(emmy_awards, INFO)
-    winners = []
+def handle_cast(li, item, imdb, dbtype):
     li_item = xbmcgui.ListItem(item['name'], offscreen=True)
-    for i in oscar_awards:
-        if i['nominee'] == item['name']:
-            li_item.setProperty('oscar', str(i['won']))
-    for i in emmy_awards:
-        if i['rank'] in [2, 3, 4, 5]:
-            for n in i['nominees']:
-                if n['nominee'] == item['name']:
-                    if n['awards']['wins'] > 0:
-                        li_item.setProperty('emmy', 'True')
-                        winners.append(item['name'])
-                        break
-                    else:
-                        if item['name'] not in winners:
-                            li_item.setProperty('emmy', 'False')
+    if dbtype == 'movie':
+        oscar_awards = OSCAR_DATA.get(imdb, {}).get('awards', {})
+        for i in oscar_awards:
+            if i['nominee'] == item['name']:
+                li_item.setProperty('oscar', str(i['won']))
+    if dbtype == 'tvshow':
+        emmy_awards = EMMY_DATA.get(imdb, {}).get('emmys', [])
+        winners = []
+        for i in emmy_awards:
+            if i['rank'] in [2, 3, 4, 5]:
+                for n in i['nominees']:
+                    if n['nominee'] == item['name']:
+                        if n['awards']['wins'] > 0:
+                            li_item.setProperty('emmy', 'True')
+                            winners.append(item['name'])
+                            break
+                        else:
+                            if item['name'] not in winners:
+                                li_item.setProperty('emmy', 'False')
 
     li_item.setLabel(item['name'])
     li_item.setLabel2(item['role'])
