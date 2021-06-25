@@ -24,6 +24,7 @@ from resources.lib.image import ImageBlur, image_info
 from resources.lib.cinema_mode import CinemaMode
 from resources.lib.oscar_data import OSCAR_DATA
 from resources.lib.emmy_data import EMMY_DATA
+from resources.lib.downloaders import RadarrAPI, SonarrAPI, RADARR_ICON, SONARR_ICON, get_default_folder, get_default_quality, get_default_search
 
 ########################
 
@@ -874,3 +875,118 @@ def get_pickle(file_name):
         return None
     else:
         return data
+
+
+def downloadmovie(params):
+    movie_id = remove_quotes(params.get('movieid', ''))
+
+    # if user cancels, return
+    if not movie_id:
+        return
+    rdr = RadarrAPI()
+    movies = rdr.get_movies()
+    if movies is None:
+        DIALOG.notification('Radarr', 'Problem getting movies', RADARR_ICON, 5000)
+        return
+    tmdb_ids = [movie.get('tmdbId') for movie in movies]
+    data = rdr.lookup_movie(movie_id)
+
+    # open dialog for choosing preferred quality if not specified
+    default_quality = get_default_quality('radarr')
+    if default_quality is None:
+        return
+
+    # open dialog for choosing default folder if not specified
+    default_folder = get_default_folder('radarr')
+    if default_folder is None:
+        return
+
+    # open dialog for choosing default search if not specified
+    default_search = get_default_search('radarr')
+    if default_search is None:
+        return
+
+    # Set Add Movie Data
+    tmdb_id = data['tmdbId']
+    title = data['title']
+    new_data = {
+        'title': str(title),
+        'year': int(data['year']),
+        'qualityProfileId': int(default_quality),
+        'titleSlug': str(data['titleSlug']),
+        'tmdbId': int(tmdb_id),
+        'images': data['images'],
+        'rootFolderPath': default_folder,
+        'monitored': True,
+        'addOptions': {
+             'searchForMovie': default_search
+        }
+    }
+    if tmdb_id in tmdb_ids:
+        DIALOG.notification('Radarr', 'Already added movie "%s"' % title, RADARR_ICON, 5000)
+        return
+    else:
+        res = rdr.add_movie(new_data)
+        if res is None:
+            DIALOG.notification('Radarr', 'Could not add movie "%s"' % title, RADARR_ICON, 5000)
+        else:
+            DIALOG.notification('Radarr', 'Added movie "%s"' % title, RADARR_ICON, 5000)
+        return
+
+def downloadshow(params):
+    snr = SonarrAPI()
+    series_id = remove_quotes(params.get('seriesid', ''))
+
+    # if user cancels, return
+    if not series_id:
+        return
+
+    shows = snr.get_shows()
+    if shows is None:
+        DIALOG.notification('Sonarr', 'Problem getting shows from Sonarr', SONARR_ICON, 5000)
+        return
+    tvdb_ids = [show.get('tvdbId') for show in shows]
+    data = snr.lookup_show(series_id)
+
+    # open dialog for choosing preferred quality if not specified
+    default_quality = get_default_quality('sonarr')
+    if default_quality is None:
+        return
+
+    # open dialog for choosing default folder if not specified
+    default_folder = get_default_folder('sonarr')
+    if default_folder is None:
+        return
+
+    # Get default search if not specified
+    default_search = get_default_search('sonarr')
+    # DIALOG.notification('Sonarr', f'Default Search: {default_search}', SONARR_ICON, 5000)
+    # if default_search is None:
+    #     return
+
+    # Set Add Show Data
+    tvdb_id = data['tvdbId']
+    title = data['title']
+    new_data = {
+        'title': str(title),
+        'profileId': int(default_quality),
+        'titleSlug': str(data['titleSlug']),
+        'tvdbId': int(tvdb_id),
+        'images': data['images'],
+        'seasons': data['seasons'],
+        'rootFolderPath': default_folder,
+        'monitored': True,
+        'addOptions': {
+             'searchForMissingEpisodes': default_search
+        }
+    }
+    if tvdb_id in tvdb_ids:
+        DIALOG.notification('Sonarr', 'Already added show "%s"' % title, SONARR_ICON, 5000)
+        return
+    else:
+        res = snr.add_show(new_data)
+        if res is None:
+            DIALOG.notification('Sonarr', 'Could not add show "%s"' % title, SONARR_ICON, 5000)
+        else:
+            DIALOG.notification('Sonarr', 'Added show "%s"' % title, SONARR_ICON, 5000)
+        return

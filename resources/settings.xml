@@ -11,4 +11,19 @@
     	<setting label="32021" type="slider" id="background_interval" default="10" range="5,1,30" option="int" />
         <setting label="32003" type="action" action="RunScript(script.embuary.helper,action=deleteimgcache)" />
 	</category>
+	 <category label="Radarr">
+        <setting label="Host Url" type="text" id="radarr-base-url" default="http://example.com:7878" />
+        <setting label="API Key" type="text" id="radarr-api-key" default="" />
+        <setting label="Default Profile" id="radarr-default-quality" type="text" default="Choose On Search" values="Choose On Search|Any|SD|HD-720p|HD-1080p|Ultra-HD|HD-720p/1080p" />
+        <setting label="Default Download Folder" id="radarr-default-folder" type="text" default="Choose On Search" values="Choose On Search" />
+        <setting label="Start search for missing movie" id="radarr-default-search"  type="bool" default=""/>
+
+    </category>
+    <category label="Sonarr">
+         <setting label="Host Url" type="text" id="sonarr-base-url" default="http://example.com:8989" />
+        <setting label="API Key" type="text" id="sonarr-api-key" default="" />
+        <setting label="Default Profile" type="select" id="sonarr-default-quality" default="Choose On Search" values="Choose On Search|Any|SD|HD-720p|HD-1080p|Ultra-HD|HD-720p/1080p" />
+        <setting label="Default Download Folder" type="text" id="sonarr-default-folder" default="Choose On Search" values="Choose On Search" />
+        <setting label="Start search for missing episodes" id="sonarr-default-search" type="bool" default=""/>
+    </category>
 </settings>

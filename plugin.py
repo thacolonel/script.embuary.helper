@@ -3,17 +3,13 @@
 ########################
 import sys
 import xbmcplugin
-import pickle
-import threading
+
 import urllib.parse as urlparse
 from resources.lib.plugin_listing import *
 from resources.lib.plugin_content import *
 from resources.lib.plugin_actions import *
-from resources.lib.utils import get_pickle, save_pickle
 
 ########################
-
-
 
 
 class Main:
@@ -35,6 +31,8 @@ class Main:
         try:
             args = path[1:]
             self.params = dict(urlparse.parse_qsl(args))
+            log('Grr Params', INFO)
+            log(self.params, INFO)
 
             ''' workaround to get the correct values for titles with special characters
             '''
