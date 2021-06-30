@@ -3,7 +3,6 @@
 
 ########################
 
-import os
 import random
 import xbmc
 import xbmcgui
@@ -14,8 +13,8 @@ from resources.lib.json_map import JSON_MAP
 from resources.lib.helper import ADDON, ADDON_ID, DIALOG, INFO, PLAYER, get_bool, get_clean_path, get_date, get_joined_items, json_call, log, remove_quotes, set_plugincontent, url_quote, winprop, get_cache, write_cache
 from resources.lib.library import add_items, get_unwatched
 from resources.lib.image import CreateGenreThumb
-from resources.lib.AFI_100 import AFI_100
-from resources.lib.oscar_data import OSCAR_DATA
+from resources.data.AFI_100 import AFI_100
+from resources.data.oscars import OSCAR_DATA
 from resources.lib.imdb import get_imdb_250
 from resources.lib.database import update_user_rating
 

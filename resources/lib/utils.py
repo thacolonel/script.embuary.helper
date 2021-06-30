@@ -22,8 +22,8 @@ from resources.lib.library import get_unwatched
 from resources.lib.json_map import JSON_MAP
 from resources.lib.image import ImageBlur, image_info
 from resources.lib.cinema_mode import CinemaMode
-from resources.lib.oscar_data import OSCAR_DATA
-from resources.lib.emmy_data import EMMY_DATA
+from resources.data.oscars import OSCAR_DATA
+from resources.data.emmys import EMMY_DATA
 from resources.lib.downloaders import RadarrAPI, SonarrAPI, RADARR_ICON, SONARR_ICON, get_default_folder, get_default_quality, get_default_search
 
 ########################
@@ -282,7 +282,7 @@ def setkodisetting(params):
             value = False
 
     json_call('Settings.SetSettingValue',
-              params={'setting': '%s' % settingname, 'value': value}
+              params={'setting': settingname, 'value': value}
               )
 
 
@@ -294,9 +294,9 @@ def toggleaddons(params):
 
         try:
             json_call('Addons.SetAddonEnabled',
-                      params={'addonid': '%s' % addon, 'enabled': enable}
+                      params={'addonid': addon, 'enabled': enable}
                       )
-            log('%s - enable: %s' % (addon, enable))
+            log(f'{addon} - enable: {enable}')
         except Exception:
             pass
 
@@ -376,7 +376,7 @@ def playitem(params):
 
     elif file:
         # playmedia() because otherwise resume points get ignored
-        execute('PlayMedia(%s)' % file)
+        execute(f'PlayMedia({file})')
 
 
 def playfolder(params):
@@ -396,12 +396,12 @@ def playfolder(params):
         try:
             result = json_query['result']['seasondetails']
         except Exception as error:
-            log('Play folder error getting season details: %s' % error)
+            log(f'Play folder error getting season details: {error}')
             return
 
         json_query = json_call('VideoLibrary.GetEpisodes',
                                properties=JSON_MAP['episode_properties'],
-                               query_filter={'operator': 'is', 'field': 'season', 'value': '%s' % result['season']},
+                               query_filter={'operator': 'is', 'field': 'season', 'value': result['season']},
                                params={'tvshowid': int(result['tvshowid'])}
                                )
     else:
@@ -413,7 +413,7 @@ def playfolder(params):
     try:
         result = json_query['result']['episodes']
     except Exception as error:
-        log('Play folder error getting episodes: %s' % error)
+        log(f'Play folder error getting episodes: {error}')
         return
 
     for episode in result:
@@ -443,27 +443,27 @@ def playall(params):
         winprop('script.shuffle.bool', True)
 
     if method == 'fromhere':
-        method = 'Container(%s).ListItemNoWrap' % container
+        method = f'Container({container}).ListItemNoWrap'
     else:
-        method = 'Container(%s).ListItemAbsolute' % container
+        method = f'Container({container}).ListItemAbsolute'
 
-    for i in range(int(xbmc.getInfoLabel('Container(%s).NumItems' % container))):
+    for i in range(int(xbmc.getInfoLabel(f'Container({container}).NumItems'))):
 
-        if condition('String.IsEqual(%s(%s).DBType,movie)' % (method,i)):
+        if condition(f'String.IsEqual({method}({i}).DBType,movie)'):
             media_type = 'movie'
-        elif condition('String.IsEqual(%s(%s).DBType,episode)' % (method,i)):
+        elif condition(f'String.IsEqual({method}({i}).DBType,episode)'):
             media_type = 'episode'
-        elif condition('String.IsEqual(%s(%s).DBType,song)' % (method,i)):
+        elif condition(f'String.IsEqual({method}({i}).DBType,song)'):
             media_type = 'song'
         else:
             media_type = None
 
-        dbid = xbmc.getInfoLabel('%s(%s).DBID' % (method,i))
-        url = xbmc.getInfoLabel('%s(%s).Filenameandpath' % (method,i))
+        dbid = xbmc.getInfoLabel(f'{method}({i}).DBID')
+        url = xbmc.getInfoLabel(f'{method}({i}).Filenameandpath')
 
         if media_type and dbid:
             json_call('Playlist.Add',
-                      item={'%sid' % media_type: int(dbid)},
+                      item={f'{media_type}id': int(dbid)},
                       params={'playlistid': playlistid}
                       )
         elif url:
@@ -483,7 +483,7 @@ def playrandom(params):
     container = params.get('id')
     dbid = params.get('dbid')
 
-    i = random.randint(1,int(xbmc.getInfoLabel('Container(%s).NumItems' % container)))
+    i = random.randint(1,int(xbmc.getInfoLabel(f'Container({container}).NumItems')))
 
     if condition('String.IsEqual(Container(%s).ListItemAbsolute(%s).DBType,movie)' % (container, i)):
         media_type = 'movie'
@@ -588,7 +588,7 @@ def txtfile(params):
             DIALOG.textviewer(remove_quotes(params.get('header')), text)
 
     else:
-        log('Cannot find %s' % path)
+        log(f'Cannot find {path}')
         winprop(prop, clear=True)
 
 
@@ -747,7 +747,6 @@ def oscarviewer(params):
     bodytxt = remove_quotes(params.get('message', ''))
     imdbid = remove_quotes(params.get('imdbid', ''))
     oscar_item = OSCAR_DATA.get(imdbid, {})
-    log('Grr oscar_item: %s' % oscar_item, INFO)
     oscars = oscar_item.get('awards', [])
     annual = oscar_item.get('annual')
     heading = annual + ' ' + headertxt
@@ -823,8 +822,6 @@ def emmyviewer(params):
 
             else:
                 text = ''
-
-
 
             emmy_text += f'[I]{text}[/I]'
 
@@ -923,14 +920,14 @@ def downloadmovie(params):
         }
     }
     if tmdb_id in tmdb_ids:
-        DIALOG.notification('Radarr', 'Already added movie "%s"' % title, RADARR_ICON, 5000)
+        DIALOG.notification('Radarr', f'Already added movie: {title}', RADARR_ICON, 5000)
         return
     else:
         res = rdr.add_movie(new_data)
         if res is None:
-            DIALOG.notification('Radarr', 'Could not add movie "%s"' % title, RADARR_ICON, 5000)
+            DIALOG.notification('Radarr', f'Could not add movie: {title}', RADARR_ICON, 5000)
         else:
-            DIALOG.notification('Radarr', 'Added movie "%s"' % title, RADARR_ICON, 5000)
+            DIALOG.notification('Radarr', f'Added movie: {title}', RADARR_ICON, 5000)
         return
 
 def downloadshow(params):
@@ -981,12 +978,12 @@ def downloadshow(params):
         }
     }
     if tvdb_id in tvdb_ids:
-        DIALOG.notification('Sonarr', 'Already added show "%s"' % title, SONARR_ICON, 5000)
+        DIALOG.notification('Sonarr', f'Already added show: {title}', SONARR_ICON, 5000)
         return
     else:
         res = snr.add_show(new_data)
         if res is None:
-            DIALOG.notification('Sonarr', 'Could not add show "%s"' % title, SONARR_ICON, 5000)
+            DIALOG.notification('Sonarr', f'Could not add show: {title}', SONARR_ICON, 5000)
         else:
-            DIALOG.notification('Sonarr', 'Added show "%s"' % title, SONARR_ICON, 5000)
+            DIALOG.notification('Sonarr', f'Added show: {title}', SONARR_ICON, 5000)
         return

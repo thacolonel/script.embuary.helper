@@ -5,10 +5,10 @@
 import xbmc
 import xbmcgui
 
-from resources.lib.helper import condition, get_joined_items, log, get_cache, write_cache, DIALOG, INFO
-from resources.lib.oscar_data import OSCAR_DATA
-from resources.lib.emmy_data import EMMY_DATA
-from resources.lib.AFI_100 import AFI_100
+from resources.lib.helper import condition, get_joined_items
+from resources.data.oscars import OSCAR_DATA
+from resources.data.emmys import EMMY_DATA
+from resources.data.AFI_100 import AFI_100
 
 ########################
 
@@ -349,15 +349,16 @@ def handle_episodes(li, item):
     li.append((item['file'], li_item, False))
 
 
-def handle_cast(li, item, imdb, dbtype):
+def handle_cast(li, item, media_id, dbtype):
     li_item = xbmcgui.ListItem(item['name'], offscreen=True)
     if dbtype == 'movie':
-        oscar_awards = OSCAR_DATA.get(imdb, {}).get('awards', {})
+        oscar_awards = OSCAR_DATA.get(media_id, {}).get('awards', {})
         for i in oscar_awards:
-            if i['nominee'] == item['name']:
-                li_item.setProperty('oscar', str(i['won']))
+            if i['rank'] in [3, 4, 5, 6]:
+                if i['nominee'] == item['name']:
+                    li_item.setProperty('oscar', str(i['won']))
     if dbtype == 'tvshow':
-        emmy_awards = EMMY_DATA.get(imdb, {}).get('emmys', [])
+        emmy_awards = EMMY_DATA.get(media_id, {}).get('emmys', [])
         winners = []
         for i in emmy_awards:
             if i['rank'] in [2, 3, 4, 5]:
