@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import requests
-import xbmc
-import xbmcgui
-from resources.lib.helper import ADDON, ADDON_ID, DIALOG, ERROR, INFO, log
+from resources.lib.helper import ADDON, DIALOG, ERROR, log
 
 
 RADARR_BASE_URL = ADDON.getSetting('radarr-base-url')
@@ -25,7 +23,7 @@ SONARR_HOST_URL = SONARR_BASE_URL + 'api'
 RADARR_ICON = ADDON.getAddonInfo('path') + '\\resources\\radarr.png'
 SONARR_ICON = ADDON.getAddonInfo('path') + '\\resources\\sonarr.png'
 
-TMDB_API = '67cba0fa98b536f194c6a20c3b686447'
+TMDB_API = ADDON.getSetting('tmdb-api-key')
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
 

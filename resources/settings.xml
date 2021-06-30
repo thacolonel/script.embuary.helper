@@ -10,6 +10,7 @@
     	<setting label="32018" type="slider" id="blur_radius" default="2" range="1,1,10" option="int" />
     	<setting label="32021" type="slider" id="background_interval" default="10" range="5,1,30" option="int" />
         <setting label="32003" type="action" action="RunScript(script.embuary.helper,action=deleteimgcache)" />
+        <setting label="TMDB API Key" type="text" id="tmdb-api-key" default="fc168650632c6597038cf7072a7c20da"/>
 	</category>
 	 <category label="Radarr">
         <setting label="Host Url" type="text" id="radarr-base-url" default="http://example.com:7878" />
