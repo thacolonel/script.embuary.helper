@@ -5,7 +5,7 @@ import requests
 
 
 def get_imdb_250():
-    top_250 = {"Grr": "Blah"}
+    top_250 = {}
     url = 'https://www.imdb.com/chart/top'
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')

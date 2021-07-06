@@ -9,8 +9,6 @@ def update_user_rating(movie_id, user_rating):
     conn = sqlite3.connect(directory)
     cur = conn.cursor()
     rq = """UPDATE movie SET userrating = ? WHERE idMovie = ?"""
-    result = cur.execute(rq, (user_rating, movie_id))
-    log('GRR DB', INFO)
-    log(result, INFO)
+    cur.execute(rq, (user_rating, movie_id))
     conn.commit()
     conn.close()

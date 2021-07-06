@@ -12,6 +12,7 @@ if __name__ == "__main__":
     '''
     sync_library_tags()
     addon_data_cleanup()
+    check_simplecache()
 
     ''' Start service
     '''

@@ -1237,9 +1237,6 @@ class PluginContent(object):
                     afi_list.append({'rank': afi_item, 'item': item})
             afi_list = sorted(afi_list, key=itemgetter('rank'))
 
-            log('Grr JSON QUERY', INFO)
-            log(self.dbtype, INFO)
-            # log(afi_list, INFO)
             for award in afi_list:
                 item_list.append(award['item'])
             write_cache(cache_key, item_list)

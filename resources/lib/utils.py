@@ -13,7 +13,6 @@ import datetime
 import random
 import os
 import locale
-import pickle
 
 from resources.lib.helper import (ADDON, ADDON_ID, ADDON_DATA_IMG_PATH, DIALOG, INFO, OSCARS_PATH, addon_data, clear_playlists, condition, execute,
                                   get_bool, get_library_tags, go_to_path, json_call, log, remove_quotes, set_library_tags,
@@ -846,52 +845,6 @@ def emmyviewer(params):
 
 
     DIALOG.textviewer(heading, str(emmy_text))
-
-
-def save_pickle(file_name, data):
-    try:
-        if not os.path.exists(OSCARS_PATH):
-            os.makedirs(OSCARS_PATH)
-
-    except (OSError,TypeError) as e:
-        # fix for race condition
-        if e.errno != os.errno.EEXIST:
-            raise
-        DIALOG.notification('GRR', f'error saving pickle file{file_name} with error:{e}')
-        log(f'error saving pickle file{file_name} with error:{e}', INFO)
-
-    file_path = os.path.join(OSCARS_PATH,file_name)
-    with open(file_path, 'wb+') as f:
-        pickle.dump(data, f)
-    log(f'pickle file saved: {file_name}', INFO)
-    DIALOG.notification('GRR', f'pickle file saved: {file_name}')
-
-
-def get_pickle(file_name):
-    try:
-        if not os.path.exists(OSCARS_PATH):
-            os.makedirs(OSCARS_PATH)
-
-    except OSError as e:
-        # fix for race condition
-        if e.errno != os.errno.EEXIST:
-            raise
-        pass
-
-    file_path = os.path.join(OSCARS_PATH, file_name)
-    try:
-        with open(file_path, 'rb') as f:
-            data = pickle.load(f)
-    except (OSError,TypeError, EOFError):
-        # log(f'Could not load pickle for {file_name}', INFO)
-        # DIALOG.notification('GRR', f'Could not load pickle for {file_name}')
-        return None
-    except pickle.UnpicklingError:
-        log(f'Unpickling error for {file_name}', INFO)
-        DIALOG.notification('GRR', f'Unpickling error for {file_name}')
-        return None
-    else:
-        return data
 
 
 def downloadmovie(params):
