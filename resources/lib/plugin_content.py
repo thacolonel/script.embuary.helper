@@ -1278,8 +1278,13 @@ class PluginContent(object):
         set_plugincontent(content='%ss' % self.dbtype, category='Oscar Best Picture')
 
     def getoscars(self, refresh=None, category=None, winner=None):
+        if category == 'all':
+            handle_type = 'movie'
         if category is None:
             category = self.params.get('category')
+            handle_type = 'oscars'
+            if category == 'all':
+                handle_type = 'movie'
         if winner is None:
             winner = self.params.get('winner', True)
         if winner == 'yes':
@@ -1361,20 +1366,12 @@ class PluginContent(object):
 
             oscar_list = sorted(oscar_list, key=itemgetter('premiered', 'winner'), reverse=True)
             for oscar in oscar_list:
-                # oscar_item = oscar['item']
-                # if oscar_item['oscar_winner'] is True:
-                #     rating = 2
-                # else:
-                #     rating = 1
-                # params = {'movieid': oscar_item['movieid'], "ratings": {"oscars": {"rating": rating}}}
-                # json_call('VideoLibrary.SetMovieDetails', params=params)
-                # update_user_rating(oscar_item['movieid'], oscar_item['userrating'])
                 item_list.append(oscar['item'])
 
 
             write_cache(cache_key, item_list)
 
-        add_items(self.li, item_list, type=self.dbtype)
+        add_items(self.li, item_list, type=handle_type)
         set_plugincontent(content='%ss' % self.dbtype, category='Oscars', custom_sort=True)
 
     def refreshoscars(self):

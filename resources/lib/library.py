@@ -5,7 +5,7 @@
 import xbmc
 import xbmcgui
 
-from resources.lib.helper import condition, get_joined_items
+from resources.lib.helper import condition, get_joined_items, DIALOG
 from resources.data.oscars import OSCAR_DATA
 from resources.data.emmys import EMMY_DATA
 from resources.data.AFI_100 import AFI_100
@@ -27,6 +27,8 @@ def add_items(li, json_query, type, searchstring=None, imdb=None, dbtype=None):
             handle_genre(li, item)
         elif type == 'cast':
             handle_cast(li, item, imdb, dbtype)
+        elif type == 'oscars':
+            handle_oscars(li, item)
 
 
 def handle_movies(li, item, searchstring=None):
@@ -487,3 +489,35 @@ def _set_ratings(li_item, item):
             pass
 
     return li_item
+
+
+def handle_oscars(li, item):
+    director = item.get('director', '')
+    li_item = xbmcgui.ListItem(item['title'], offscreen=True)
+    li_item.setInfo(type='Video', infoLabels={'title': item['title'],
+                                              'year': item['year'],
+                                              'dbid': item['movieid'],
+                                              'imdbnumber': item['imdbnumber'],
+                                              'director': get_joined_items(director),
+                                              'mediatype': 'movie',
+                                              'path': item['file'],
+                                              })
+
+    # Add oscars
+    oscar_item = OSCAR_DATA.get(item['imdbnumber'], {})
+    oscar_awards = oscar_item.get('awards', [])
+    if oscar_awards:
+        li_item.setProperty('oscars', str(oscar_item.get('text', '')))
+        li_item.setProperty('oscar_wins', str(oscar_item.get('wins_total', '')))
+        li_item.setProperty('oscar_noms', str(oscar_item.get('noms_total', '')))
+        li_item.setProperty('oscar_nominee', item.get('oscar_nominee', item['title']))
+        li_item.setProperty('oscar_year', str(item.get('oscar_year', item['year'])))
+        li_item.setProperty('oscar_winner', str(item.get('oscar_winner', '')))
+        li_item.setProperty('oscar_category', item.get('oscar_category', ''))
+        li_item.setProperty('actor_icon', item.get('actor_icon', ''))
+
+    li_item.setArt(item['art'])
+    li_item.setArt({'icon': 'DefaultVideo.png'})
+
+    li.append((item['file'], li_item, False))
+    return li
