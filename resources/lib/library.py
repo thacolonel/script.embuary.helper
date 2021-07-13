@@ -504,9 +504,25 @@ def handle_oscars(li, item):
                                               })
 
     # Add oscars
+    best_picture = []
     oscar_item = OSCAR_DATA.get(item['imdbnumber'], {})
     oscar_awards = oscar_item.get('awards', [])
     if oscar_awards:
+        for award in oscar_awards:
+            if award['tag_name'] == 'best_director':
+                if award['won'] is True:
+                    li_item.setProperty('best_director', 'True')
+                else:
+                    li_item.setProperty('best_director', 'False')
+
+            if award['tag_name'] == 'best_picture':
+                if award['won'] is True:
+                    best_picture.append('True')
+                else:
+                    best_picture.append('False')
+        if best_picture:
+            li_item.setProperty('oscar_picture', str(best_picture[0]))
+
         li_item.setProperty('oscars', str(oscar_item.get('text', '')))
         li_item.setProperty('oscar_wins', str(oscar_item.get('wins_total', '')))
         li_item.setProperty('oscar_noms', str(oscar_item.get('noms_total', '')))

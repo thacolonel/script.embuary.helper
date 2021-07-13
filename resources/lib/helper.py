@@ -461,15 +461,13 @@ def write_cache(key, data, cache_time=336):
 
 
 def check_simplecache():
-    query = "DELETE FROM simplecache WHERE id LIKE '%movieawards%'"
+    query = "DELETE FROM simplecache WHERE id LIKE ?"
     json_query = json_call('VideoLibrary.GetMovies')
     try:
         movies = json_query['result']['movies']
     except Exception:
         log('No movies found in library to update Imdb 250.', INFO)
-        CACHE._execute_sql(query)
-        DIALOG.notification('SimpleCache', 'Resetting movieaward entries.')
+        CACHE._execute_sql(query, ('%movieawards%',))
     else:
         if movies is None:
-            CACHE._execute_sql(query)
-            DIALOG.notification('SimpleCache', 'Resetting movieaward entries.')
+            CACHE._execute_sql(query, ('%movieawards%',))

@@ -1446,4 +1446,4 @@ def update_top250():
                     log(f'{movie_title} is no longer ranked', INFO)
 
         if len(updates) > 0 and not PLAYER.isPlayingVideo():
-            DIALOG.notification('Imdb top 250 Update', f'{len(updates)} movies were updated')
+            DIALOG.notification('Imdb Top 250 Update', f'{len(updates)} movies were updated')
