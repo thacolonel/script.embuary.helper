@@ -5,7 +5,7 @@
 import xbmc
 import xbmcgui
 
-from resources.lib.helper import condition, get_joined_items, DIALOG
+from resources.lib.helper import condition, get_joined_items
 from resources.data.oscars import OSCAR_DATA
 from resources.data.emmys import EMMY_DATA
 from resources.data.AFI_100 import AFI_100
@@ -531,6 +531,7 @@ def handle_oscars(li, item):
         li_item.setProperty('oscar_winner', str(item.get('oscar_winner', '')))
         li_item.setProperty('oscar_category', item.get('oscar_category', ''))
         li_item.setProperty('actor_icon', item.get('actor_icon', ''))
+        li_item.setProperty('director_icon', item.get('director_icon', ''))
 
     li_item.setArt(item['art'])
     li_item.setArt({'icon': 'DefaultVideo.png'})

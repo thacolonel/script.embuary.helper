@@ -451,13 +451,13 @@ def set_plugincontent(content=None, category=None, custom_sort=False):
 
 
 def get_cache(key):
-    return CACHE.get(CACHE_PREFIX + key)
+    cache_data = CACHE.get(CACHE_PREFIX + key)
+    return cache_data
 
 
 def write_cache(key, data, cache_time=336):
     if data:
-        CACHE.set(CACHE_PREFIX + key, data,
-                  expiration=datetime.timedelta(hours=cache_time))
+        CACHE.set(CACHE_PREFIX + key, data, expiration=datetime.timedelta(hours=cache_time))
 
 
 def check_simplecache():

@@ -16,7 +16,7 @@ from resources.lib.image import CreateGenreThumb
 from resources.data.AFI_100 import AFI_100
 from resources.data.oscars import OSCAR_DATA
 from resources.lib.imdb import get_imdb_250
-from resources.lib.database import update_user_rating
+from resources.lib.database import update_user_rating, get_director_art
 
 ########################
 
@@ -1333,6 +1333,8 @@ class PluginContent(object):
                                     if i['nominee'] == c['name']:
                                         if c.get('thumbnail') is not None:
                                             item['actor_icon'] = c['thumbnail']
+                                        else:
+                                            item['actor_icon'] = item.get('art', {}).get('poster')
                                         item['oscar_nominee'] = c['name']
                                         break
                                 if winner is True and i['won'] is True:
@@ -1349,6 +1351,12 @@ class PluginContent(object):
                                                        'winner': item['oscar_winner']})
                                     break
                             else:
+                                if category == 'best_director':
+                                    poster = get_director_art(item['movieid'])
+                                    if poster is not None:
+                                        item['director_icon'] = poster
+                                    else:
+                                        item['director_icon'] = item.get('art', {}).get('poster')
                                 if winner is True:
                                     if i['won'] is True:
                                         item['oscar_winner'] = True
