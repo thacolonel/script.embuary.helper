@@ -2,7 +2,7 @@
 # coding: utf-8
 
 ########################
-
+import os
 import random
 import xbmc
 import xbmcgui
@@ -701,6 +701,7 @@ class PluginContent(object):
 
             genre['art'] = posters
 
+            # generated_thumb = os.path.join(xbmcvfs.translatePath(f'special://home/addons/{ADDON_ID}/resources/genres/{genre["label"].lower()}.jpg'))
             generated_thumb = CreateGenreThumb(genre['label'], posters)
             if generated_thumb:
                 genre['art']['thumb'] = str(generated_thumb)
@@ -1453,5 +1454,7 @@ def update_top250():
                     update_user_rating(movie_id, user_rating)
                     log(f'{movie_title} is no longer ranked', INFO)
 
-        if len(updates) > 0 and not PLAYER.isPlayingVideo():
+        if len(updates) > 1 and not PLAYER.isPlayingVideo():
             DIALOG.notification('Imdb Top 250 Update', f'{len(updates)} movies were updated')
+        elif  len(updates) == 1 and not PLAYER.isPlayingVideo():
+            DIALOG.notification('Imdb Top 250 Update', f'{len(updates)} movie was updated')
