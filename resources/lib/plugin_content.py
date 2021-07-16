@@ -36,6 +36,7 @@ class PluginContent(object):
         self.playlist = remove_quotes(params.get('playlist'))
         self.unwatched = remove_quotes(params.get('unwatched'))
         self.limit = remove_quotes(params.get('limit'))
+        self.guest_stars = remove_quotes(params.get('gueststars'))
         self.retry_count = 1
         self.li = li
 
@@ -82,8 +83,13 @@ class PluginContent(object):
     ''' by dbid to get all available listitems
     '''
     def getbydbid(self):
+        guest_list_dup = []
+        guest_list = []
+        # good_guest = []
+        # bad_guest = []
         try:
             if self.dbtype == 'tvshow' and self.idtype in ['season', 'episode']:
+                season_id = self.dbid
                 self.dbid = self._gettvshowid()
 
             json_query = json_call(self.method_details,
@@ -92,6 +98,39 @@ class PluginContent(object):
                                 )
 
             result = json_query['result'][self.key_details]
+
+            if self.idtype == 'season' and self.guest_stars:
+                if self.guest_stars:
+                    DIALOG.notification('Grr Guests', f'Old ID: {season_id} New Id: {self.dbid}')
+                    episode_query = json_call('VideoLibrary.GetEpisodes',
+                                             properties=['seasonid', 'season', 'cast'],
+                                             sort={'order': 'ascending', 'method': 'season'},
+                                             params={'tvshowid': int(result.get('tvshowid'))}
+                                             )
+
+                    episode_query = episode_query['result']['episodes']
+                    for episode in episode_query:
+                        if int(episode['seasonid']) == int(season_id):
+                            log(f'Grr blah - {episode["label"]}', INFO)
+                            for guest in episode['cast']:
+                                name = guest['name']
+                                # thumbnail = guest.get('thumbnail')
+                                order = guest['order']
+                                if order == 0 and name not in guest_list_dup:
+                                    # if thumbnail:
+                                    #     good_guest.append(guest)
+                                    # else:
+                                    #     bad_guest.append(guest)
+                                    guest_list.append(guest)
+                                    guest_list_dup.append(name)
+                # good_guest = sorted(good_guest, key=itemgetter('name'))
+                # bad_guest = sorted(bad_guest, key=itemgetter('name'))
+                guest_list = sorted(guest_list, key=itemgetter('name'))
+                # guest_list = good_guest + bad_guest
+                add_items(self.li, guest_list, type='cast', dbtype=self.dbtype)
+                return
+
+
 
             if self.dbtype == 'episode':
                 try:
@@ -701,7 +740,7 @@ class PluginContent(object):
 
             genre['art'] = posters
 
-            # generated_thumb = os.path.join(xbmcvfs.translatePath(f'special://home/addons/{ADDON_ID}/resources/genres/{genre["label"].lower()}.jpg'))
+            # generated_thumb = os.path.join(xbmcvfs.translatePath(f'special://home/addons/{ADDON_ID}/resources/genres/{genre["label"].lower()}.png'))
             generated_thumb = CreateGenreThumb(genre['label'], posters)
             if generated_thumb:
                 genre['art']['thumb'] = str(generated_thumb)
@@ -919,7 +958,7 @@ class PluginContent(object):
     ''' get cast of item
     '''
     def getcast(self):
-        imdb = None
+        imdb_id = None
         try:
             if self.dbtitle:
                 if self.dbtype == 'movie':
@@ -934,7 +973,6 @@ class PluginContent(object):
                                            limit=1,
                                            query_filter=self.filter_title
                                            )
-
             elif self.dbid:
                 if self.dbtype == 'tvshow' and self.idtype in ['season', 'episode']:
                     self.dbid = self._gettvshowid()
@@ -943,7 +981,6 @@ class PluginContent(object):
                     json_query = json_call(self.method_details,
                                            properties=['cast', 'imdbnumber'],
                                            params={self.param: int(self.dbid)}
-
                                            )
                 else:
                     json_query = json_call(self.method_details,
@@ -952,10 +989,11 @@ class PluginContent(object):
                                            )
 
             if self.key_details in json_query['result']:
+
                 cast = json_query['result'][self.key_details]['cast']
 
                 if self.dbtype in ['movie', 'tvshow']:
-                    imdb = json_query['result'][self.key_details].get('imdbnumber')
+                    imdb_id = json_query['result'][self.key_details].get('imdbnumber')
 
                 ''' Fallback to TV show cast if episode has no cast stored
                 '''
@@ -968,11 +1006,12 @@ class PluginContent(object):
                                            )
 
                     cast = json_query['result']['tvshowdetails']['cast']
-                    imdb = json_query['result'][self.key_details].get('imdbnumber')
+                    imdb_id = json_query['result'][self.key_details].get('imdbnumber')
+
 
             else:
                 cast = json_query['result'][self.key_items][0]['cast']
-                imdb = json_query['result'][self.key_details].get('imdbnumber')
+                imdb_id = json_query['result'][self.key_details].get('imdbnumber')
 
             if not cast:
                 raise Exception
@@ -980,7 +1019,13 @@ class PluginContent(object):
         except Exception:
             log('Get cast: No cast found.')
             return
-        add_items(self.li, cast, type='cast', imdb=imdb, dbtype=self.dbtype)
+        if self.guest_stars:
+            guest_list = []
+            for c in cast:
+                if c['order'] == 0:
+                    guest_list.append(c)
+            cast = sorted(guest_list, key=itemgetter('name'))
+        add_items(self.li, cast, type='cast', imdb=imdb_id, dbtype=self.dbtype)
 
 
     ''' get full cast of movie set
@@ -1442,11 +1487,6 @@ def update_top250():
                     json_call('VideoLibrary.SetMovieDetails', params=params)
                     update_user_rating(movie_id, user_rating)
                     updates.append(imdb_id)
-                    # if not PLAYER.isPlayingVideo():
-                    #     if current_rank in [0, None]:
-                    #         DIALOG.notification('Imdb top 250 Update', f'{movie_title} added as #{new_rank}')
-                    #     else:
-                    #         DIALOG.notification('Imdb top 250 Update', f'{movie_title} changed from #{current_rank} to #{new_rank}')
             else:
                 if current_rank not in [None, 0]:
                     params = {'movieid': movie_id, 'top250': None}
